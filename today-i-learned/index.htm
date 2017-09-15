@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Today I Learned</title>
+		<meta name="description" content="Today I Learned">
+		<meta name="keywords" content="til, programming, php, js, github, programação">
+		<meta name="author" content="Lawrence Lagerlof">
+		<style>
+			* {
+				font-family: Courier;
+			}
+		</style>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			$(document).ready(function() {
+				$.ajax({
+					dataType: "json",
+					url: "https://api.github.com/repos/llagerlof/today-i-learned/git/trees/master?recursive=0",
+					success: function(result) {
+						var files = [];
+						$.each(result.tree, function(k, v) {
+							files.push(v.path);
+						});
+						files.sort();
+						$.each(files, function(k,v){
+							var regex = new RegExp("^[0-9]{4}-[0-9]{2}-[0-9]{2}");
+							var isdocfile = regex.test(v);
+							if (isdocfile) {
+								var $dom_file = $('#filename-item-template').html();
+								$dom_file = $dom_file.replace(/{{filename}}/g, v);
+								$('body').append($dom_file);
+							}
+						});
+					},
+					error: function(result) {
+						console.log(result);
+						$('body').append("Can't load https://api.github.com/repos/llagerlof/today-i-learned/git/trees/master?recursive=0");
+					}
+				});
+			});
+		</script>		
+		<script id="filename-item-template" type="text/template">
+			<p><a href='https://github.com/llagerlof/today-i-learned/blob/master/{{filename}}'>{{filename}}</a></p>
+		</script>
+	</head>
+	<body>
+		<h1>Today I Learned</h1>
+		<p>https://github.com/llagerlof/today-i-learned</p>
+	</body>
+</html>
