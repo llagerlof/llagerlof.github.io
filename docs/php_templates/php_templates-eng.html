@@ -1,0 +1,529 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Templates functions</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<style>
+.title-main {
+	font: bold x-large "Times New Roman", Times, serif;
+
+
+}
+.title-chapter {
+	font: bold large "Times New Roman", Times, serif;
+	border-bottom: 1px solid;
+	padding-bottom: 2px;
+
+
+}
+.main {
+	font: x-small Verdana, Arial, Helvetica, sans-serif;
+	background: #FFCC99;
+
+}
+.mono {
+	font: x-small "Courier New", Courier, mono;
+}
+.title-subchapter {
+	font: bold x-small Verdana, Arial, Helvetica, sans-serif;
+}
+.screen {
+	font: x-small "Courier New", Courier, mono;
+	background: #FFCCCC;
+	margin: 15px;
+	padding: 10px;
+	border-top: 1px solid #000000;
+	border-right: 2px solid #000000;
+	border-bottom: 2px solid #000000;
+	border-left: 1px solid #000000;
+
+
+}
+ul {
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+.description {
+	margin-left: 50px;
+}
+
+</style>
+</head>
+
+<body bgcolor="#CCCCCC" text="#000000" link="#0000FF" vlink="#0000CC" alink="#990000" class="main">
+<p class="title-main">Templates functions</p>
+<p class="title-chapter">Index</p>
+<ol type="1">
+	<li><a href="#Introduction">Introduction</a> 
+		<ol type="a">
+			<li><a href="#WhatAreTemplates">What are templates?</a></li>
+			<li><a href="#WhyUsingPhpTemplates">Why using php_templates?</a></li>
+			<li><a href="#HowToWorkWithTemplates">How to work with templates?</a></li>
+		</ol>
+	</li>
+	<li><a href="#Requirements">Requirements</a></li>
+	<li><a href="#Installation">Installation</a> 
+		<ol type="a">
+			<li><a href="#BuiltInModule">Built-in module</a></li>
+			<li><a href="#ExternalLoadableModule">External loadable module</a></li>
+			<li><a href="#CompilingUnderFreeBSD">Compiling under FreeBSD</a></li>
+		</ol>
+	</li>
+	<li><a href="#FunctionReference">Function Reference</a> 
+		<ol type="a">
+			<li><a href="#tmplClose">tmpl_close()</a></li>
+			<li><a href="#tmplContext">tmpl_context()</a></li>
+			<li><a href="#tmplGet">tmpl_get()</a></li>
+			<li><a href="#tmplIterate">tmpl_iterate()</a></li>
+			<li><a href="#tmplLoad">tmpl_load()</a></li>
+			<li><a href="#tmplOpen">tmpl_open()</a></li>
+			<li><a href="#tmplParse">tmpl_parse()</a></li>
+			<li><a href="#tmplSet">tmpl_set()</a></li>
+			<li><a href="#tmplSetGlobal">tmpl_set_global()</a></li>
+			<li><a href="#tmplStructure">tmpl_structure()</a></li>
+			<li><a href="#tmplTypeOf">tmpl_type_of()</a></li>
+			<li><a href="#tmplUnset">tmpl_unset()</a></li>
+		</ol>
+	</li>
+</ol>
+<p class="title-chapter"><a name="Introduction"></a>Introduction</p>
+<p>These functions allow you to process HTML template files in a very fast and 
+	efficent way.</p>
+<p>You can find the project's homepage at <a href="http://php-templates.sourceforge.net/" title="Go to the php-templates project homepage" target="_blank">http://php-templates.sourceforge.net/</a>.</p>
+<p class="title-subchapter"><a name="WhatAreTemplates"></a>What are templates?
+<p>Templates are generally used in projects with so-called N-tier architecture 
+	to separate presentation and business logic layers. When using templates you 
+	have all web site's design in <span class="mono">.html</span> files which 
+	are processed (parsed) by your <span class="mono">.php</span> scripts. Benefits 
+	of this tecnology are obvious: 
+<ul>
+	<li class="main">You may reuse the design from page to page just parsing the 
+		same template</li>
+	<li>When you need to change something on the site, you just make changes in 
+		one place: in the temlpate.</li>
+	<li>When there are various persons working on a project they can work on different 
+		files without any interference</li>
+	<li>There are some more which you will find out on your own</li>
+</ul>
+<p class="title-subchapter"><a name="WhyUsingPhpTemplates"></a>Why using php_templates?</p>
+<p>We all do realize that there are many other template solutions on the market 
+	of N-tier architecture projects and <span class="mono">php_templates</span> 
+	is just the one of them. However, when we're going to compare <span class="mono">php_templates</span> 
+	to other projects we will find some differencies:</p>
+<ul>
+	<li>It is extremely fast due to some advanced algorythms and optimizations 
+		used in the code</li>
+	<li>It is very easy to understand and to switch to</li>
+	<li>Its great flexibility allows you to work with almost any kind of templates. 
+		You may even use your favourite visual HTML-editor to create template 
+		files (i.e. Macromedia<sup>&reg;</sup> Dreamweaver<sup>&reg;</sup>)</li>
+	<li>It has small but very flexible API which allows you to do almost anything 
+		with a template file</li>
+</ul>
+<p>What you will NOT find in <span class="mono">php_templates</span> is any kind 
+	of scripting language to be used in a template. As it was stated above, templates 
+	are used to separade code from design. That is why any logic inside of a template 
+	goes strictly against templates ideology. However, almost any web developers 
+	community keeps endless discussions about whether to use some programming 
+	inside of a template or not. That is really going to be a sort of religious 
+	war. Nevertheless, there are many projects with their own scripting languages 
+	to be used in templates, and you may always switch to them. They aren't too 
+	fast though.</p>
+<p class="title-subchapter"><a name="HowToWorkWithTemplates"></a>How to work with templates?</p>
+<p>Instead of starting with a &quot;Hello, World!&quot; example, let's take some 
+	real life task: a list of prices taken from a database.</p>
+<p>Product names and their respective prices are kept in a database table with 
+	fields <span class="mono">product</span> and <span class="mono">price</span>. 
+	What we have to do is just to generate a web page with all prices. First, 
+	we are going to prepare a template file <span class="mono">prices.html</span>:</p>
+<p class="screen">&lt;html&gt;<br>
+	&lt;head&gt;<br>
+	&nbsp;&nbsp;&lt;title&gt;Prices of ACME, Inc.&lt;/title&gt;<br>
+	&lt;/head&gt;<br>
+	<br>
+	&lt;body&gt;<br>
+	&nbsp;&nbsp;&lt;table border=1 cellspacing=0 cellpadding=2&gt;<br>
+	<br>
+	&nbsp;&nbsp;&nbsp;&nbsp;&lt;tr&gt;<br>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;th&gt;Product&lt;/th&gt;&lt;th&gt;Price&lt;/th&gt;<br>
+	&nbsp;&nbsp;&nbsp;&nbsp;&lt;/tr&gt;<br>
+	<br>
+	&nbsp;&nbsp;<b>&lt;tmpl:row&gt;</b><br>
+	&nbsp;&nbsp;&nbsp;&nbsp;&lt;tr&gt;<br>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;td&gt;<b>{product}</b>&lt;/td&gt;&lt;td&gt;<b>{price}</b>&lt;/td&gt;<br>
+	&nbsp;&nbsp;&nbsp;&nbsp;&lt;/tr&gt;<br>
+	&nbsp;&nbsp; <b>&lt;/tmpl:row&gt;</b><br>
+	<br>
+	&nbsp;&nbsp;&lt;/table&gt;<br>
+	<br>
+	&lt;/body&gt;<br>
+	&lt;/html&gt;</p>
+<p class="main">Some parts of the template are marked bold. These are not HTML, 
+	but <span class="mono">php_templates</span> tags.</p>
+<p class="main"> <span class="mono">&lt;tmpl:row&gt;</span> is where a <span class="mono">template 
+	context</span> named <span class="mono">row</span> begins, and <span class="mono">&lt;/tmpl:row&gt;</span> 
+	is where the context ends. A template context is a dynamic block in a template 
+	which could be repeated zero or more times. This process is called <span class="mono">iteration</span>. 
+</p>
+<p class="main"><span class="mono">{product}</span> and <span class="mono">{price}</span> 
+	are just template tags. Template engine replaces its tags with values provided 
+	by PHP code.</p>
+<p class="main">If we looked at this HTML page in a browser we would just see 
+	a table with two rows in it. That doesn't look like a price list, does it? 
+	Now let's do some magic and complete our task. We need some PHP code to process 
+	the template and here it goes:</p>
+<p class="screen">&lt;?php<br>
+	<br>
+	/* MySQL DB connection code is skiped */<br>
+	<br>
+	$template = tmpl_open('prices.html');<br>
+	<br>
+	$sql = 'SELECT product, price FROM Products ORDER BY product';<br>
+	$result = mysql_query($sql) or die('SQL error: '.mysql_error());<br>
+	<br>
+	while($data = mysql_fetch_assoc($result)) {<br>
+	&nbsp;&nbsp;tmpl_iterate($template, 'row');<br>
+	&nbsp;&nbsp;tmpl_set($template, 'row', $data);<br>
+	}<br>
+	<br>
+	echo tmpl_parse($template);<br>
+	<br>
+	?&gt;</p>
+<p class="main">First, we tell to the <span class="mono">php_templates</span> 
+	engine what template file we are going to use. This is done by <span class="mono">tmpl_open()</span> 
+	function. </p>
+<p class="main">Next, we execute an SQL query to get the data from database. </p>
+<p class="main">After the SQL query is done we start the loop where all magic 
+	is being done. <span class="mono">tmpl_iterate()</span> creates new iteration 
+	of the context <span class="mono">row</span>, and <span class="mono">tmpl_set()</span> 
+	assigns values from <span class="mono">$data['product']</span> and <span class="mono">$data['price']</span> 
+	(obtained from the database) to their respective template tags in a newly 
+	iterated context.</p>
+<p class="main">When the template is loaded with data we parse it with <span class="mono">tmpl_parse()</span> 
+	function and print the parsed template content to output.</p>
+<p class="main">Nothing else. That was easy, wasn't it?</p>
+<p class="title-chapter"><a name="Requirements"></a>Requirements</p>
+<p>In order to have these functions available, you must compile PHP with Templates 
+	support. </p>
+<p class="title-chapter"><a name="Installation"></a>Installation</p>
+<p class="title-subchapter"><a name="BuiltInModule"></a>Built-in module</p>
+<p>Download the <a href="http://sourceforge.net/projects/php-templates/" target="_blank">source 
+	code</a> into the <span class="mono">ext/</span> directory of PHP source distribution. 
+	Unpack the archive. The <span class="mono">&lt;PHP_source&gt;/ext/templates/</span> 
+	directory should appear. Change back to the main PHP source directory and 
+	rebuild the PHP configuration script:</p>
+<p class="screen">cd &lt;PHP_source_dir&gt;<br>
+	./buildconf</p>
+<p>Now, when configuration script is regenerated, you may configure PHP enabling 
+	Templates functions and proceed with usual compiling and installation operations:</p>
+<p class="screen">./configure &lt;your-PHP-settings&gt; --enable-templates<br>
+	make<br>
+	make install</p>
+<p class="title-subchapter"><a name="ExternalLoadableModule"></a>External loadable module</p>
+<p>Download the <a href="http://sourceforge.net/projects/php-templates/" target="_blank">source 
+	code</a> and unpack it into any directory. Now run the following commands:</p>
+<p class="screen">cd templates<br>
+	phpize<br>
+	./configure --enable-templates=shared<br>
+	make</p>
+<p>When everything is done you will find a <span class="mono">templates.so</span> 
+	file in the <span class="mono">modules/</span> directory. This is the compiled 
+	loadable Templates module. Copy it to the same directory where your script 
+	is and use the following PHP code to load the module:</p>
+<p class="screen">&lt;? if(!extension_loaded('templates')) dl('php_templates'); 
+	?&gt;</p>
+<p class="title-subchapter"><a name="CompilingUnderFreeBSD"></a>Compiling under FreeBSD</p>
+<p class="main"><i>Thanks to <b>Noor Dawod</b> for writing this section.</i></p>
+<p class="main">I don't know why there are plenty of errors while compiling the 
+	source code under FreeBSD (maybe other BSD's, though not important now), but 
+	the truth is that I found a fast way to compile it with no errors. </p>
+<p>This is done by using the Ports collection without the need to compile and 
+	install Apache. The steps to compile php-templates is as follows: </p>
+<p class="screen">$ su - <br>
+	Password: <i>&lt;root pass here to become root&gt;</i> <br>
+	# cd /usr/ports/www/php-templates <br>
+	# cat distinfo </p>
+<p>This will list the contents of the <span class="mono">&quot;distinfo&quot;</span> 
+	file. It'll look something like this: </p>
+<p class="screen"> MD5 (php_templates-1.1.tar.gz) = e7c30fd006f2a63862fdc40b76757f5f </p>
+<p>Note that FreeBSD's ports collection as of 4.7-STABLE is <b>not</b> still updated 
+	with the latest version of php-templates. What we need to do is change the 
+	version number and compile without MD5 checksum, like this: </p>
+<p class="screen"># replace php_templates-1.1.tar.gz php_templates-1.4.tar.gz -- distinfo <br>
+	# vi Makefile <br>
+	<i>&lt;change the line PORTVERSION= to reflect the version you're compiling&gt;</i> 
+</p>
+<p>Now, we're ready. Do the last thing: </p>
+<p class="screen"># make NO_CHECKSUM=yes </p>
+<p>This would download and compile the php-templates in no time. After that, you'll 
+	have a compiled extension named <span class="mono">templates.so</span> residing 
+	in <span class="mono">/usr/ports/www/php-templates/work/templates/modules</span>. 
+</p>
+<p>Now you can copy the extension file to the <span class="mono">extension_dir</span> 
+	defined for your PHP version (normally in <span class="mono">php.ini</span>) 
+	and add the following line in php.ini: </p>
+<p class="screen"> extension=templates.so </p>
+<p>Remember to clean the php-templates compilation directory using: </p>
+<p class="screen"># make clean </p>
+<p>Also, if you're already running Apache or other web server, remember to restart 
+	it for things to make effect. </p>
+<p></p>
+<p class="title-chapter"><a name="FunctionReference"></a>Function reference</p>
+<p class="main">&nbsp;</p>
+<p class="title-chapter"><a name="tmplClose"></a>tmpl_close()</p>
+<p>Closes an open template handle.</p>
+<p class="title-subchapter">Synopsis</p>
+<p class="description"><span class="mono">bool tmpl_close( int template )</span></p>
+<p class="title-subchapter">Return value</p>
+<p class="description">Returns <span class="mono">TRUE</span> on success and <span class="mono">FALSE</span> 
+	on failure</p>
+<p class="title-subchapter">Description</p>
+<p class="description">The template pointed to by <span class="mono">tmpl</span> 
+	is closed.</p>
+<p class="description">The template handle <span class="mono">tmpl</span> must 
+	be valid, and successfully created by <span class="mono">tmpl_open()</span> 
+	or <span class="mono">tmpl_load()</span>.</p>
+<p class="title-chapter"><a name="tmplContext"></a>tmpl_context()</p>
+<p>Changes the current context in a template and/or returns path to the current 
+	context. </p>
+<p class="title-subchapter">Synopsis</p>
+<p class="description"><span class="mono">string tmpl_context( int template [, 
+	string path ] )</span></p>
+<p class="title-subchapter">Return value</p>
+<p class="description">Returns global path to currently active template context.</p>
+<p class="title-subchapter">Description</p>
+<p class="description">Template contexts are like directories in a file system, 
+	and <span class="mono">tmpl_context()</span> function is like a <span class="mono">chdir</span> 
+	command that you use in a command line shell.</p>
+<p class="description">Every template context has its path from the root context 
+	which is a template itself. </p>
+<p class="description">When passing a <span class="mono">path</span> parameter 
+	to any template function you may do that in both global (like <span class="mono">'/context1/context2/tag'</span>) 
+	and local (<span class="mono">'context2/tag'</span> or <span class="mono">'../context/tag'</span>) 
+	forms. You may <b>not</b> have two contexts with the same global path!</p>
+<p class="description">Note, that a call to <span class="mono">tmpl_context()</span> 
+	on a context which is empty (without any template tags assigned in it) and not iterated, creates a new 
+	<a href="#tmplIterate">iteration</a> of the given context!</p>
+<p class="title-subchapter">Example</p>
+<p class="screen">&lt;!-- template.html --&gt;<br>
+	<br>
+	&lt;table border=1 cellspacing=0 cellpadding=2&gt;<br>
+	&lt;tmpl:row&gt;&lt;tr&gt;<br>
+	&nbsp;&nbsp; &lt;td&gt;{cell}&lt;/td&gt;<br>
+	&lt;/tr&gt;&lt;/tmpl:row&gt;<br>
+	&lt;/table&gt;</p>
+<p class="screen">&lt;?php /* template.php */<br>
+	<br>
+	$template = tmpl_open('template.html');<br>
+	<br>
+	tmpl_context($template, 'row');<br>
+	<br>
+	for($i=0; $i &lt; 10; $i++) {<br>
+	&nbsp;&nbsp;tmpl_iterate($template, '/row');<br>
+	&nbsp;&nbsp;tmpl_set($template, 'cell', $i);<br>
+	}<br>
+	<br>
+	echo tmpl_parse($template);<br>
+	?&gt;</p>
+<p class="title-chapter"><a name="tmplGet"></a>tmpl_get()</p>
+<p>Returns the value of a tag or a context in the last iteration.</p>
+<p class="title-subchapter">Synopsis</p>
+<p class="description"><span class="mono">mixed tmpl_get( int template, string path )</span></p>
+<p class="title-subchapter">Return value</p>
+<p class="description">When <span class="mono">path</span> points to a tag, the 
+	function returns tag's value in the last iteration of its context.</p>
+<p class="description">When a context is addressed by <span class="mono">path</span>, 
+	the returned value is an array containing all values of tags and context within 
+	the the given context.</p>
+<p class="description">Returns <span class="mono">FALSE</span> on failure.</p>
+<p class="title-chapter"><a name="tmplIterate"></a>tmpl_iterate()</p>
+<p class="main">Iterates a context.</p>
+<p class="title-subchapter">Synopsis</p>
+<p class="description"><span class="mono">bool tmpl_iterate( int template, string path )</span></p>
+<p class="title-subchapter">Return value</p>
+<p class="description">Returns TRUE on success, and FALSE on failure.</p>
+<p class="title-subchapter">Description</p>
+<p class="description">This function iterates a context pointed to by <span class="mono">path</span>.</p>
+<p class="description">By default empty contexts (which have no any tags assigned 
+	in them) are not parsed by <span class="mono">tmpl_parse()</span> function. 
+	If you want an empty context to appear on the page, it needs to be iterated. 
+	Every subsequent iteration of an empty context gives no result.</p>
+<p class="title-chapter"><a name="tmplLoad"></a>tmpl_load()</p>
+<p class="main">Loads a template from a string.</p>
+<p class="title-subchapter">Synopsis</p>
+<p class="description"><span class="mono">int tmpl_load( string template [, array 
+	config ] )</span></p>
+<p class="title-subchapter">Return value</p>
+<p class="description">Returns newly created template handle or <span class="mono">FALSE</span> 
+	on error.</p>
+<p class="title-subchapter">Description</p>
+<p class="description">Acts exactly like <span class="mono">tmpl_open()</span>, 
+	but instead of a filename with template, loads a template from <span class="mono">template</span> 
+	parameter.</p>
+<p class="title-subchapter">See also</p>
+<p class="description"><span class="mono">tmpl_open()</span></p>
+<p class="title-chapter"><a name="tmplOpen"></a>tmpl_open()</p>
+<p class="main">Loads a template from file.</p>
+<p class="title-subchapter">Synopsis</p>
+<p class="description"><span class="mono">int tmpl_open( string filename [, array 
+	config ] )</span></p>
+<p class="title-subchapter">Return value</p>
+<p class="description">Returns newly created template handle or FALSE on error.</p>
+<p class="title-subchapter">Description</p>
+<p class="description">This function loads a template from <span class="mono">filename</span> 
+	file. If <span class="mono">allow_url_fopen</span> option is enabled in your 
+	<span class="mono">php.ini</span> file, you may load templates from remote 
+	sites (see manual on <span class="mono">fopen()</span> function).</p>
+<p class="description">When the second parameter s passed to the tmpl_open() function, 
+	the engine reads the following configuration parameters from <span class="mono">config</span> 
+	array:
+<p class="description"><span class="mono">left</span> - a string with left part 
+	of template tag<br>
+	<span class="mono">right</span> - right part of template tag<br>
+	<span class="mono">ctx_ol</span> - left part of template context opening tag 
+	(&quot;context open left&quot;)<br>
+	<span class="mono">ctx_or</span> - right part of template context opening 
+	tag (&quot;context open right&quot;)<br>
+	<span class="mono">ctx_cl</span> - left part of template context closing tag 
+	(&quot;context close left&quot;)<br>
+	<span class="mono">ctx_cr</span> - right part of template context closing 
+	tag (&quot;context close right&quot;)
+<p class="description">Only <span class="mono">ctx_cr</span> parameter may be 
+	left blank. In this case whole context closing tag should be assigned to <span class="mono">ctx_cl</span> 
+	configuration parameter. This is done to support templates made in Macromedia<sup>&reg;</sup> 
+	Dreamweaver<sup>&reg;</sup> visual HTML-editor.
+<p class="description">The following is the default configuration of <span class="mono">php_templates</span> 
+	engine: 
+<p class="screen">$config = array(<br>
+	&nbsp;&nbsp;'left'&nbsp;&nbsp;&nbsp;=&gt; '{',<br>
+	&nbsp;&nbsp;'right' &nbsp;=&gt; '}',<br>
+	&nbsp;&nbsp;'ctx_ol' =&gt; '&lt;tmpl:',<br>
+	&nbsp;&nbsp;'ctx_or' =&gt; '&gt;',<br>
+	&nbsp;&nbsp;'ctx_cl' =&gt; '&lt;/tmpl:',<br>
+	&nbsp;&nbsp;'ctx_cr' =&gt; '&gt;'<br>
+	); 
+<p class="description">Also, every template may have its own configuration given 
+	in an HTML tag <span class="mono">&lt;template&gt;</span>:
+<p class="screen">&lt;template left=&quot;{&quot; right=&quot;}&quot; ctx_ol=&quot;&lt;tmpl:&quot; 
+	ctx_or=&quot;&gt;&quot; ctx_cl=&quot;&lt;/tmpl:&quot; ctx_cr=&quot;&gt;&quot;&gt; 
+<p class="title-subchapter">Example
+<p class="description">The following example opens Macromedia<sup>&reg;</sup> 
+	Dreamweaver<sup>&reg;</sup> template:
+<p class="screen"> $template = tmpl_open('template.html', array(<br>
+	&nbsp;&nbsp;'ctx_ol' =&gt; '&lt;!-- TemplateBeginEditable name=&quot;',<br>
+	&nbsp;&nbsp;'ctx_or' =&gt; '&quot; --&gt;',<br>
+	&nbsp;&nbsp;'ctx_cl' =&gt; '&lt;!-- TemplateEndEditable --&gt;&quot;,<br>
+	&nbsp;&nbsp;'ctx_cr' =&gt; ''<br>
+	));
+<p class="title-chapter"><a name="tmplParse"></a>tmpl_parse()
+<p class="main">Parses a template.
+<p class="title-subchapter">Synopsis
+<p class="description"><span class="mono">string tmpl_parse( int template [, string 
+	path ] )</span>
+<p class="title-subchapter">Return value
+<p class="description">Returns parsed template content or <span class="mono">FALSE</span> 
+	on error.
+<p class="title-subchapter">Description
+<p class="description">When you finished assigning values to template tags and 
+	contexts, you call tmpl_parse() to parse the loaded template and take the 
+	resulting content.
+<p class="description">The second optional parameter <span class="mono">path</span> 
+	points to a context to be parsed. In this case only the addressed context 
+	is parsed.
+<p class="description">You may call tmpl_parse() on a template as many times as 
+	you need.
+<p class="title-chapter"><a name="tmplSet"></a>tmpl_set()
+<p class="main">Assigns a value to a template tag.
+<p class="title-subchapter">Synopsis
+<p class="description"><span class="mono">bool tmpl_set( int template, string 
+	path, mixed value )<br>
+	bool tmpl_set( int template, array values )</span>
+<p class="title-subchapter">Return value
+<p class="description">Returns <span class="mono">TRUE</span> on success, or <span class="mono">FALSE</span> 
+	on failure.
+<p class="title-subchapter">Description
+<p class="description"><span class="mono">template</span> is a template handle 
+	which is obtained by a <span class="mono">tmpl_open()</span> or <span class="mono">tmpl_load()</span> 
+	function call.
+<p class="description"><span class="mono">path</span> is a global or local path 
+	of a tag or context to receive values. This parameter should point to a template 
+	context when the <span class="mono">value</span> is an array. Associative 
+	arrays provide values for tags named by array keys. Indexed arrays with subarrays 
+	in values create new iterations of the context pointed to by <span class="mono">path</span>.
+<p class="description">When called with two parameters, the <span class="mono">path</span> 
+	is assumed to be the current path in the template (see <span class="mono">tmpl_context()</span>).
+<p class="description">Template handle can be passed as a <span class="mono">value</span> 
+	too. In this case template is parsed and its resulting output is assigned 
+	to the tag.
+<p class="title-subchapter">See also
+<p class="description"><span class="mono">tmpl_context()</span>, <span class="mono">tmpl_iterate()</span>
+<p class="title-chapter"><a name="tmplSetGlobal"></a>tmpl_set_global()
+<p class="main">Assigns a value to a tag with the same name in every context
+<p class="title-subchapter">Synopsis
+<p class="description"><span class="mono">bool tmpl_set_global( int template, 
+	string tag, string value )</span>
+<p class="title-subchapter">Return value
+<p class="description">Returns <span class="mono">TRUE</span> on success, or <span class="mono">FALSE</span> 
+	on failure.
+<p class="title-subchapter">Description
+<p class="description">When called every tag named by <span class="mono">tag</span> 
+	parameter is assigned the <span class="mono">value</span> in every context 
+	of template.
+<p class="title-chapter"><a name="tmplStructure"></a>tmpl_structure()
+<p class="main">Retrieves template's structure.
+<p class="title-subchapter">Synopsis
+<p class="description"><span class="mono">array tmpl_structure( int template [, 
+	string path [, int mask [, int mode ] ] ] )</span>
+<p class="title-subchapter">Return value
+<p class="description">Returns array with template tags and contexts hierarchy.
+<p class="title-subchapter">Description
+<p class="description">This function is useful when program doesn't know what 
+	template tags are present in template, and the code may depend on what tags 
+	are used in the template.
+<p class="description"><span class="mono">template</span> is a valid template 
+	handle obtained by <span class="mono">tmpl_open()</span> or <span class="mono">tmpl_load()</span> 
+	function call.
+<p class="description"><span class="mono">path</span> is a global or local path 
+	pointing to a context which structure is to be retrieved. The current path 
+	is used when this parameter is omitted.
+<p class="description"><span class="mono">mask</span> parameter filters the function's 
+	output by elements type. It could be set to one of three values:
+<ul class="description">
+	<li><span class="mono">TMPL_TAG</span> - only retrieve paths to template tags. 
+		This is the default value.</li>
+	<li><span class="mono">TMPL_CONTEXT</span> - only retrieve paths to template 
+		contexts.</li>
+	<li><span class="mono">TMPL_TAG | TMPL_CONTEXT</span> - get both tags and 
+		contexts paths.</li>
+</ul>
+<p class="description"><span class="mono">mode</span> parameter changes the structure 
+	of resulting array and could take one of the following values:</p>
+<p class="description"><span class="mono">TMPL_LONG</span> - retrieve full path 
+	to every template element. Context paths are terminated with a slash (/) character 
+	and tag paths are not. This is the default value.</p>
+<p class="description"><span class="mono">TMPL_SHORT</span> - only get a tag or 
+	a context name without full path to the root context.</p>
+<p class="title-chapter"><a name="tmplTypeOf"></a>tmpl_type_of()</p>
+<p class="main">Checks type of template element.</p>
+<p class="title-subchapter">Synopsis</p>
+<p class="description"><span class="mono">int tmpl_type_of( int template, string 
+	path )</span></p>
+<p class="title-subchapter">Return value</p>
+<p class="description">Returns <span class="mono">TMPL_TAG</span> when path is 
+	pointing to a tag, and <span class="mono">TMPL_CONTEXT</span> when a context 
+	is pointed to by <span class="mono">path</span>.</p>
+<p class="description">Returns <span class="mono">FALSE</span> when given <span class="mono">path</span> 
+	doesn't exist in the <span class="mono">template</span>.</p>
+<p class="title-chapter"><a name="tmplUnset"></a>tmpl_unset()</p>
+<p class="main">Unassignes a value from a tag or empties a context.</p>
+<p class="title-subchapter">Synopsis</p>
+<p class="description"><span class="mono">bool tmpl_unset( int template, string 
+	path )</span></p>
+<p class="title-subchapter">Return value</p>
+<p class="description">Returns <span class="mono">TRUE</span> on success, or <span class="mono">FALSE</span> 
+	on failure.</p>
+<p class="title-subchapter">Description</p>
+<p class="description">Deletes the value assigned to the tag pointed by <span class="mono">path</span> 
+	in the current iteration or deletes iterations of a context.</p>
+</body>
+</html>
