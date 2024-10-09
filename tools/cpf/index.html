@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador e Validador de CPF</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        input {
+            font-size: 1.2em;
+            padding: 0.5em;
+            width: 200px;
+            margin-bottom: 10px;
+            font-family: Courier New, Courier;
+        }
+        button {
+            font-size: 1.2em;
+            padding: 0.5em 1em;
+            margin: 5px;
+        }
+        h1 {
+            font-family: Courier New, Courier;
+            font-size: 1.5em;
+        }
+        .valid {
+            background-color: #4cEf90;
+        }
+        .invalid {
+            background-color: #fF9F9F;
+        }
+        .default {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gerador e Validador de CPF</h1>
+    <input type="text" id="cpf" minlength="11" maxlength="14" placeholder="CPF" class="default" oninput="validarCPF()" onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode === 46 || event.charCode === 45" onpaste="handlePaste(event)" />
+    <div>
+        <button onclick="gerarCPF()">Gerar CPF</button>
+    </div>
+
+    <script>
+        function gerarCPF() {
+            let n = [];
+            for (let i = 0; i < 9; i++) {
+                n.push(Math.floor(Math.random() * 10));
+            }
+            let d1 = calcularDigito(n, 10);
+            n.push(d1);
+            let d2 = calcularDigito(n, 11);
+            n.push(d2);
+            document.getElementById('cpf').value = n.join('');
+            validarCPF();
+        }
+
+        function validarCPF() {
+            let cpfInput = document.getElementById('cpf');
+            let cpf = cpfInput.value;
+            cpf = cpf.replace(/\D/g, '');
+
+            if (cpf.length === 0) {
+                cpfInput.classList.add('default');
+                cpfInput.classList.remove('valid');
+                cpfInput.classList.remove('invalid');
+                return;
+            }
+
+            if (cpf.length !== 11) {
+                cpfInput.classList.add('invalid');
+                cpfInput.classList.remove('valid');
+                cpfInput.classList.remove('default');
+                return;
+            }
+
+            let n = cpf.slice(0, 9).split('').map(Number);
+            let d1Calculado = calcularDigito(n, 10);
+            n.push(d1Calculado);
+            let d2Calculado = calcularDigito(n, 11);
+
+            if (d1Calculado == cpf[9] && d2Calculado == cpf[10]) {
+                cpfInput.classList.add('valid');
+                cpfInput.classList.remove('invalid');
+                cpfInput.classList.remove('default');
+            } else {
+                cpfInput.classList.add('invalid');
+                cpfInput.classList.remove('valid');
+                cpfInput.classList.remove('default');
+            }
+        }
+
+        function calcularDigito(numeros, pesoInicial) {
+            let soma = 0;
+            for (let i = 0; i < numeros.length; i++) {
+                soma += numeros[i] * (pesoInicial - i);
+            }
+            let resto = soma % 11;
+            return (resto < 2) ? 0 : 11 - resto;
+        }
+
+        function handlePaste(event) {
+            const paste = (event.clipboardData || window.clipboardData).getData('text');
+            if (!/^[0-9\.\-]*$/.test(paste)) {
+                event.preventDefault();
+            }
+        }
+    </script>
+</body>
+</html>
