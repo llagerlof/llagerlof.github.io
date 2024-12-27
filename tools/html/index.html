@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Realtime HTML, CSS and Javascript Renderer (v.1.0.0)</title>
+  <style>
+    /* Reset margin and padding */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Container for the textarea */
+    #editor-container {
+      width: 100%;
+      height: 20vh; /* 20% of the viewport height */
+    }
+
+    /* Editor's textarea */
+    #editor {
+      width: 100%;
+      height: 100%;
+      resize: none;
+      border: none;
+      outline: none;
+      font-family: monospace;
+      font-size: 16px;
+      padding: 10px;
+    }
+
+    /* Dashed line */
+    .separator {
+      border: none;
+      border-top: 1px dashed gray;
+      margin: 0;
+      width: 100%;
+      height: 1px;
+    }
+
+    /* Preview iframe */
+    #preview {
+      width: 100%;
+      height: 80vh; /* 80% of the viewport height */
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="editor-container">
+    <textarea id="editor" placeholder="Write your HTML, CSS, or JavaScript here..."></textarea>
+  </div>
+  <hr class="separator">
+  <iframe id="preview"></iframe>
+
+  <script>
+    const editor = document.getElementById('editor');
+    const preview = document.getElementById('preview');
+
+    function updatePreview() {
+      const content = editor.value;
+      const iframeDoc = preview.contentDocument || preview.contentWindow.document;
+
+      // Write the complete content to the iframe
+      iframeDoc.open();
+      iframeDoc.write(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <title>Preview</title>
+          <style>
+            /* You can add default styles here if desired */
+          </style>
+        </head>
+        <body>
+          ${content}
+        </body>
+        </html>
+      `);
+      iframeDoc.close();
+    }
+
+    // Update the preview initially
+    updatePreview();
+
+    // Add listener to update in real-time
+    editor.addEventListener('input', updatePreview);
+  </script>
+</body>
+</html>
+
