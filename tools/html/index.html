@@ -72,23 +72,31 @@
       const content = editor.value;
       const iframeDoc = preview.contentDocument || preview.contentWindow.document;
 
-      // Write the complete content to the iframe
+      // Check if the content contains <html> (case-insensitive)
+      const hasHtmlTag = /<html[^>]*>/i.test(content);
+
       iframeDoc.open();
-      iframeDoc.write(`
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="UTF-8">
-          <title>Preview</title>
-          <style>
-            /* You can add default styles here if desired */
-          </style>
-        </head>
-        <body>
-          ${content}
-        </body>
-        </html>
-      `);
+      if (hasHtmlTag) {
+        // If it's a full HTML, just write it as is
+        iframeDoc.write(content);
+      } else {
+        // Otherwise, wrap it with DOCTYPE, html, head, and body
+        iframeDoc.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <title>Preview</title>
+            <style>
+              /* You can add default styles here if desired */
+            </style>
+          </head>
+          <body>
+            ${content}
+          </body>
+          </html>
+        `);
+      }
       iframeDoc.close();
     }
 
@@ -100,4 +108,3 @@
   </script>
 </body>
 </html>
-
