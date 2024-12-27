@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Realtime HTML, CSS and Javascript Renderer (v.1.1.0)</title>
+  <title>Realtime HTML, CSS and Javascript Renderer (v.1.1.1)</title>
   <style>
     /* Reset margin and padding */
     * {
@@ -38,6 +38,13 @@
       font-family: monospace;
       font-size: 16px;
       padding: 10px;
+    }
+
+    /* Add media query for mobile devices */
+    @media screen and (max-width: 768px) {
+      #editor {
+        font-size: 12px;
+      }
     }
 
     /* Dashed line */
