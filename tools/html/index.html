@@ -66,7 +66,7 @@
 </head>
 <body>
   <div id="editor-container">
-    <textarea id="editor" placeholder="Write your HTML, CSS, or JavaScript here..."></textarea>
+    <textarea id="editor" placeholder="Write your HTML, CSS, or JavaScript here..." autocomplete="off"></textarea>
   </div>
   <hr class="separator">
   <iframe id="preview"></iframe>
@@ -74,6 +74,12 @@
   <script>
     const editor = document.getElementById('editor');
     const preview = document.getElementById('preview');
+
+    // Add window onload event handler to reset the textarea
+    window.onload = function() {
+      editor.value = '';
+      updatePreview();
+    };
 
     function updatePreview() {
       const content = editor.value;
