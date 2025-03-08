@@ -96,6 +96,10 @@
                     <span class="stat-label">Pages (A4, 12pt)</span>
                     <span id="page-count" class="stat-value">0</span>
                 </div>
+                <div class="stat-box">
+                    <span class="stat-label">Tokens (LLM)</span>
+                    <span id="token-count" class="stat-value">0</span>
+                </div>
             </div>
         </div>
     </div>
@@ -107,10 +111,14 @@
             const wordCount = document.getElementById('word-count');
             const lineCount = document.getElementById('line-count');
             const pageCount = document.getElementById('page-count');
+            const tokenCount = document.getElementById('token-count');
 
             // Constants for page calculation
             // A standard A4 page with 12pt font is approximately 500 words
             const WORDS_PER_PAGE = 500;
+            // Constants for token approximation
+            const CHARS_PER_TOKEN = 4;
+            const TOKENS_PER_WORD = 1.33; // Approximately 4 tokens for 3 words
 
             // Update statistics in real-time
             textInput.addEventListener('input', updateStatistics);
@@ -133,6 +141,13 @@
                 // Page count (approximate based on word count)
                 const pages = Math.ceil(words / WORDS_PER_PAGE);
                 pageCount.textContent = pages;
+                
+                // Token count (approximate for LLMs)
+                // Using two common approximation methods and taking their average
+                const tokensByChars = Math.ceil(characters / CHARS_PER_TOKEN);
+                const tokensByWords = Math.ceil(words * TOKENS_PER_WORD);
+                const tokens = Math.round((tokensByChars + tokensByWords) / 2);
+                tokenCount.textContent = tokens;
             }
 
             // Initial statistics update
