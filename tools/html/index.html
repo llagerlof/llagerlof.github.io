@@ -62,6 +62,21 @@
       height: 80vh; /* 80% of the viewport height */
       border: none;
     }
+
+    /* Toggle button styling */
+    #toggle-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 8px 16px;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0.5; /* 50% transparency */
+      z-index: 1000;
+    }
   </style>
 </head>
 <body>
@@ -71,9 +86,30 @@
   <hr class="separator">
   <iframe id="preview"></iframe>
 
+  <!-- Add toggle button -->
+  <button id="toggle-button">Toggle</button>
+
   <script>
     const editor = document.getElementById('editor');
     const preview = document.getElementById('preview');
+    const editorContainer = document.getElementById('editor-container');
+    const separator = document.querySelector('.separator');
+    const toggleButton = document.getElementById('toggle-button');
+
+    // Add toggle functionality
+    let editorVisible = true;
+    toggleButton.addEventListener('click', function() {
+      if (editorVisible) {
+        editorContainer.style.display = 'none';
+        separator.style.display = 'none';
+        preview.style.height = '100vh';
+      } else {
+        editorContainer.style.display = 'block';
+        separator.style.display = 'block';
+        preview.style.height = '80vh';
+      }
+      editorVisible = !editorVisible;
+    });
 
     // Add window onload event handler to reset the textarea
     window.onload = function() {
