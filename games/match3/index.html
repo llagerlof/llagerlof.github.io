@@ -2,62 +2,41 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Match‑3 Responsivo</title>
+<title>Match 3 Game</title>
 <style>
-  body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    background: #222;
-  }
-
+  body { display:flex; justify-content:center; align-items:center; height:100vh; margin:0; background:#222; }
   #game {
     display: grid;
-    width: min(90vw, 90vh);
-    height: min(90vw, 90vh);
-    aspect-ratio: 1 / 1;
-    grid-template-columns: repeat(8, 1fr);
-    grid-template-rows: repeat(8, 1fr);
+    grid-template-columns: repeat(8, 60px);
+    grid-template-rows: repeat(8, 60px);
     gap: 4px;
     background: #444;
     padding: 10px;
     border-radius: 8px;
-    box-sizing: border-box;
   }
-
   .cell {
-    width: 100%;
-    height: 100%;
+    width: 60px; height: 60px;
     border-radius: 4px;
     box-sizing: border-box;
     cursor: pointer;
     user-select: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    display: flex; justify-content: center; align-items: center;
     transition: transform 0.2s ease;
   }
-
   .cell.red    { background: #e74c3c; }
   .cell.green  { background: #2ecc71; }
   .cell.blue   { background: #3498db; }
   .cell.yellow { background: #f1c40f; }
   .cell.purple { background: #9b59b6; }
-
   .selected {
     outline: 3px solid #fff;
   }
-
   .highlight {
     outline: 3px solid yellow;
   }
-
   .matched {
     animation: glow 0.3s;
   }
-
   @keyframes glow {
     0%   { box-shadow: 0 0 0px #fff; }
     50%  { box-shadow: 0 0 10px #fff; }
@@ -66,227 +45,215 @@
 </style>
 </head>
 <body>
-  <div id="game"></div>
+<div id="game"></div>
 
-  <script>
-  (() => {
-    const rows = 8, cols = 8;
-    const types = ['red','green','blue','yellow','purple'];
-    let board = [];
-    let firstSel = null, lastSwap = null;
+<script>
+(() => {
+  const rows = 8, cols = 8, types = ['red','green','blue','yellow','purple'];
+  const cellSize = 60; // em pixels
+  let board = [];
+  let firstSel = null, lastSwap = null;
 
-    function randType() {
-      return types[Math.floor(Math.random()*types.length)];
-    }
+  function randType() {
+    return types[Math.floor(Math.random()*types.length)];
+  }
 
-    function noInitialMatch() {
-      initBoard();
-      return !hasMatches();
-    }
-
-    function initBoard() {
+  function initBoard() {
+    let matches;
+    do {
       board = Array.from({length: rows}, () =>
         Array.from({length: cols}, () => randType())
       );
-    }
+      // detectar combinações iniciais
+      matches = detectMatches();
+    } while (matches.size > 0);
+  }
 
-    function hasMatches() {
-      // Reúne combinações sem remover
-      const m = new Set();
-      // horiz ≥3
-      for (let r=0; r<rows; r++) {
-        let cnt = 1;
-        for (let c=1; c<=cols; c++) {
-          if (c<cols && board[r][c]===board[r][c-1]) cnt++;
-          else { if (cnt>=3) return true; cnt=1; }
+  function detectMatches() {
+    const matches = new Set();
+    // Horizontais >=3
+    for (let r=0; r<rows; r++) {
+      let count = 1;
+      for (let c=1; c<=cols; c++) {
+        if (c<cols && board[r][c] === board[r][c-1]) {
+          count++;
+        } else {
+          if (count>=3) {
+            for (let k=0; k<count; k++) matches.add(r + ',' + (c-1-k));
+          }
+          count = 1;
         }
       }
-      // vert ≥3
+    }
+    // Verticais >=3
+    for (let c=0; c<cols; c++) {
+      let count = 1;
+      for (let r=1; r<=rows; r++) {
+        if (r<rows && board[r][c] === board[r-1][c]) {
+          count++;
+        } else {
+          if (count>=3) {
+            for (let k=0; k<count; k++) matches.add((r-1-k) + ',' + c);
+          }
+          count = 1;
+        }
+      }
+    }
+    // Blocos 2×2
+    for (let r=0; r<rows-1; r++) {
+      for (let c=0; c<cols-1; c++) {
+        const t = board[r][c];
+        if (t && board[r][c+1]===t && board[r+1][c]===t && board[r+1][c+1]===t) {
+          matches.add(r+','+c);
+          matches.add(r+','+(c+1));
+          matches.add((r+1)+','+c);
+          matches.add((r+1)+','+(c+1));
+        }
+      }
+    }
+    return matches;
+  }
+
+  function drawBoard() {
+    const game = document.getElementById('game');
+    game.innerHTML = '';
+    for (let r=0; r<rows; r++) {
       for (let c=0; c<cols; c++) {
-        let cnt = 1;
-        for (let r=1; r<=rows; r++) {
-          if (r<rows && board[r][c]===board[r-1][c]) cnt++;
-          else { if (cnt>=3) return true; cnt=1; }
-        }
-      }
-      // blocos 2×2
-      for (let r=0; r<rows-1; r++) {
-        for (let c=0; c<cols-1; c++) {
-          const t = board[r][c];
-          if (board[r][c+1]===t && board[r+1][c]===t && board[r+1][c+1]===t)
-            return true;
-        }
-      }
-      return false;
-    }
-
-    // Garante sem matches iniciais
-    do {} while (!noInitialMatch());
-
-    function drawBoard() {
-      const game = document.getElementById('game');
-      game.innerHTML = '';
-      for (let r=0; r<rows; r++) {
-        for (let c=0; c<cols; c++) {
-          const cell = document.createElement('div');
-          cell.className = 'cell ' + board[r][c];
-          cell.dataset.row = r;
-          cell.dataset.col = c;
-          cell.draggable = true;
-          attach(cell);
-          game.appendChild(cell);
-        }
+        const cell = document.createElement('div');
+        cell.className = 'cell ' + board[r][c];
+        cell.dataset.row = r;
+        cell.dataset.col = c;
+        cell.draggable = true;
+        addListeners(cell);
+        game.appendChild(cell);
       }
     }
+  }
 
-    function attach(cell) {
-      cell.addEventListener('click', onClick);
-      cell.addEventListener('dragstart', onDragStart);
-      cell.addEventListener('dragover', e=>e.preventDefault());
-      cell.addEventListener('dragenter', onDragEnter);
-      cell.addEventListener('dragleave', e=>e.currentTarget.classList.remove('highlight'));
-      cell.addEventListener('drop', onDrop);
-      cell.addEventListener('dragend', clearHighlights);
-    }
+  function addListeners(cell) {
+    cell.addEventListener('click', onClick);
+    cell.addEventListener('dragstart', onDragStart);
+    cell.addEventListener('dragover', e => e.preventDefault());
+    cell.addEventListener('dragenter', onDragEnter);
+    cell.addEventListener('dragleave', onDragLeave);
+    cell.addEventListener('drop', onDrop);
+    cell.addEventListener('dragend', clearHighlights);
+  }
 
-    function onClick(e) {
-      const el = e.currentTarget;
-      const [r,c] = [+el.dataset.row, +el.dataset.col];
-      if (!firstSel) {
-        firstSel = {r,c,el};
-        el.classList.add('selected');
-      } else {
-        if (adj(firstSel,r,c)) swap(firstSel,{r,c,el});
-        clearSel();
+  function onClick(e) {
+    const cell = e.currentTarget;
+    const [r,c] = [+cell.dataset.row, +cell.dataset.col];
+    if (!firstSel) {
+      firstSel = {r,c,el:cell};
+      cell.classList.add('selected');
+    } else {
+      if (isAdjacent(firstSel,r,c)) {
+        swapCells(firstSel, {r,c,el:cell});
       }
+      clearSelection();
     }
+  }
 
-    let dragSrc = null;
-    function onDragStart(e) {
-      const el = e.currentTarget;
-      dragSrc = {r:+el.dataset.row, c:+el.dataset.col, el};
+  let dragSource = null;
+  function onDragStart(e) {
+    const cell = e.currentTarget;
+    dragSource = {r:+cell.dataset.row, c:+cell.dataset.col, el:cell};
+  }
+  function onDragEnter(e) {
+    const cell = e.currentTarget;
+    const r = +cell.dataset.row, c = +cell.dataset.col;
+    if (dragSource && isAdjacent(dragSource,r,c)) {
+      cell.classList.add('highlight');
     }
-    function onDragEnter(e) {
-      const el = e.currentTarget;
-      const r = +el.dataset.row, c = +el.dataset.col;
-      if (dragSrc && adj(dragSrc,r,c)) el.classList.add('highlight');
+  }
+  function onDragLeave(e) {
+    e.currentTarget.classList.remove('highlight');
+  }
+  function onDrop(e) {
+    e.preventDefault();
+    const cell = e.currentTarget;
+    const r = +cell.dataset.row, c = +cell.dataset.col;
+    if (dragSource && isAdjacent(dragSource,r,c)) {
+      swapCells(dragSource, {r,c,el:cell});
     }
-    function onDrop(e) {
-      e.preventDefault();
-      const el = e.currentTarget;
-      const r = +el.dataset.row, c = +el.dataset.col;
-      if (dragSrc && adj(dragSrc,r,c)) swap(dragSrc,{r,c,el});
-      clearHighlights();
-    }
+    clearHighlights();
+  }
+  function clearSelection() {
+    if (firstSel) firstSel.el.classList.remove('selected');
+    firstSel = null;
+  }
+  function clearHighlights() {
+    document.querySelectorAll('.highlight').forEach(x=>x.classList.remove('highlight'));
+  }
 
-    function clearSel() {
-      if (firstSel) firstSel.el.classList.remove('selected');
-      firstSel = null;
-    }
-    function clearHighlights() {
-      document.querySelectorAll('.highlight').forEach(x=>x.classList.remove('highlight'));
-    }
+  function isAdjacent(a, r, c) {
+    return Math.abs(a.r - r) + Math.abs(a.c - c) === 1;
+  }
 
-    function adj(a, r, c) {
-      return Math.abs(a.r - r) + Math.abs(a.c - c) === 1;
-    }
+  function swapCells(a, b) {
+    [board[a.r][a.c], board[b.r][b.c]] = [board[b.r][b.c], board[a.r][a.c]];
+    a.el.className = 'cell ' + board[a.r][a.c];
+    b.el.className = 'cell ' + board[b.r][b.c];
+    lastSwap = [a, b];
+    checkMatches();
+  }
 
-    function swap(a, b) {
+  function checkMatches() {
+    const matches = detectMatches();
+    if (matches.size) {
+      removeMatches(matches);
+    } else if (lastSwap) {
+      const [a,b] = lastSwap;
       [board[a.r][a.c], board[b.r][b.c]] = [board[b.r][b.c], board[a.r][a.c]];
       a.el.className = 'cell ' + board[a.r][a.c];
       b.el.className = 'cell ' + board[b.r][b.c];
-      lastSwap = [a,b];
-      check();
-    }
-
-    function check() {
-      const m = new Set();
-      // horizontais
-      for (let r=0; r<rows; r++) {
-        let cnt=1;
-        for (let c=1; c<=cols; c++) {
-          if (c<cols && board[r][c]===board[r][c-1]) cnt++;
-          else { if (cnt>=3) for(let k=0;k<cnt;k++) m.add(r+','+(c-1-k)); cnt=1; }
-        }
-      }
-      // verticais
-      for (let c=0; c<cols; c++) {
-        let cnt=1;
-        for (let r=1; r<=rows; r++) {
-          if (r<rows && board[r][c]===board[r-1][c]) cnt++;
-          else { if (cnt>=3) for(let k=0;k<cnt;k++) m.add((r-1-k)+','+c); cnt=1; }
-        }
-      }
-      // 2×2
-      for (let r=0; r<rows-1; r++) {
-        for (let c=0; c<cols-1; c++) {
-          const t=board[r][c];
-          if (board[r][c+1]===t && board[r+1][c]===t && board[r+1][c+1]===t) {
-            m.add(r+','+c);
-            m.add(r+','+(c+1));
-            m.add((r+1)+','+c);
-            m.add((r+1)+','+(c+1));
-          }
-        }
-      }
-
-      if (m.size) removeMatches(m);
-      else if (lastSwap) {
-        const [a,b] = lastSwap;
-        [board[a.r][a.c], board[b.r][b.c]] = [board[b.r][b.c], board[a.r][a.c]];
-        a.el.className = 'cell ' + board[a.r][a.c];
-        b.el.className = 'cell ' + board[b.r][b.c];
-        lastSwap = null;
-      }
-    }
-
-    function removeMatches(m) {
-      m.forEach(p => {
-        const [r,c] = p.split(',').map(Number);
-        document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`)
-          .classList.add('matched');
-      });
-      setTimeout(()=>gravity(m), 300);
-    }
-
-    function gravity(m) {
-      m.forEach(p => {
-        const [r,c] = p.split(',').map(Number);
-        board[r][c] = null;
-      });
-      for (let c=0; c<cols; c++) {
-        const col = [];
-        const rowsIdx = [];
-        for (let r=0; r<rows; r++) {
-          if (board[r][c]!==null) {
-            col.push(board[r][c]);
-            rowsIdx.push(r);
-          }
-        }
-        const removed = rows - col.length;
-        const news = Array.from({length:removed}, randType);
-        const newCol = news.concat(col);
-        for (let r=0; r<rows; r++) {
-          board[r][c] = newCol[r];
-          const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
-          let drop = removed;
-          if (r>=removed) {
-            drop = r - rowsIdx[r-removed];
-          }
-          cell.className = 'cell ' + newCol[r];
-          cell.style.transition = 'none';
-          cell.style.transform = `translateY(${-drop*100}%)`;
-          void cell.offsetWidth;
-          cell.style.transition = 'transform 200ms ease-out';
-          cell.style.transform = '';
-        }
-      }
       lastSwap = null;
-      setTimeout(check, 250);
     }
+  }
 
-    drawBoard();
-  })();
-  </script>
+  function removeMatches(matches) {
+    matches.forEach(pos => {
+      const [r,c] = pos.split(',').map(Number);
+      const el = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+      el.classList.add('matched');
+    });
+    setTimeout(() => applyGravity(matches), 300);
+  }
+
+  function applyGravity(matches) {
+    matches.forEach(pos => {
+      const [r,c] = pos.split(',').map(Number);
+      board[r][c] = null;
+    });
+    for (let c=0; c<cols; c++) {
+      const orig = [], origRows = [];
+      for (let r=0; r<rows; r++) {
+        if (board[r][c] !== null) { orig.push(board[r][c]); origRows.push(r); }
+      }
+      const removed = rows - orig.length;
+      const novos = Array.from({length: removed}, () => randType());
+      const newCol = novos.concat(orig);
+      for (let r=0; r<rows; r++) {
+        const type = newCol[r]; board[r][c] = type;
+        const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+        let drop = removed;
+        if (r >= removed) { const idx = r - removed; drop = r - origRows[idx]; }
+        cell.className = 'cell ' + type;
+        cell.style.transition = 'none';
+        cell.style.transform = `translateY(${-drop * cellSize}px)`;
+        void cell.offsetWidth;
+        cell.style.transition = 'transform 200ms ease-out';
+        cell.style.transform = '';
+      }
+    }
+    lastSwap = null;
+    setTimeout(() => checkMatches(), 250);
+  }
+
+  // Inicialização
+  initBoard();
+  drawBoard();
+})();
+</script>
 </body>
 </html>
