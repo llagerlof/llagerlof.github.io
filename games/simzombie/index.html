@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Infecção Zumbi v3.3 - Fuga Realista Aprimorada</title>
+    <style>
+        body, html { margin: 0; padding: 0; overflow: hidden; height: 100%; background-color: #111; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <canvas id="simulationCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('simulationCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // --- Configurações ---
+        const ENTITY_SIZE = 2;
+        const WALL_THICKNESS = 40;
+        const WALL_PROXIMITY = 20;         // Distância para considerar "próximo à parede"
+        const WALL_ESCAPE_WEIGHT = 1.5;    // Peso para componente de fuga da parede
+        const NUM_INITIAL_HUMANS = 300;
+        const AVG_HUMAN_SPEED = 0.8;
+        const AVG_ZOMBIE_SPEED = 0.9;
+        const HUMAN_SPEED_VARIATION = 0.3;
+        const ZOMBIE_SPEED_VARIATION = 0.4;
+        const HUMAN_RUN_MULTIPLIER = 1.6;
+        const FLEE_DISTANCE = 70;
+        const ZOMBIE_SIGHT_RANGE = 150;
+        const CHANGE_DIRECTION_INTERVAL = 1000;
+        const MIN_INFECTION_TIME = 2000;
+        const MAX_INFECTION_TIME = 7000;
+        const COLLISION_THRESHOLD = ENTITY_SIZE * 1.5;
+
+        // --- Peso da separação entre zumbis ---
+        const ZOMBIE_SEPARATION_WEIGHT = 1.0;   // peso da força de separação
+
+        let entities = [];
+        let animationFrameId;
+
+        // Função utilitária para gerar número aleatório entre min e max
+        function randomBetween(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        class Entity {
+            constructor(x, y, status) {
+                this.x = x; this.y = y; this.status = status;
+                this.vx = 0; this.vy = 0;
+                this.infectionTimestamp = null;
+                this.infectionDuration = null;
+                this.lastDirectionChange = Date.now();
+                this.calculateSpeeds();
+                this.setInitialVelocity();
+                if (status === 'zombie') {
+                    // atribui distância de separação randômica ao virar zumbi
+                    this.separationDistance = randomBetween(2, 30);
+                }
+            }
+            calculateSpeeds() {
+                if (this.status === 'healthy' || this.status === 'infected') {
+                    const variation = (Math.random() - 0.5) * 2 * HUMAN_SPEED_VARIATION;
+                    this.baseSpeed = Math.max(0.1, AVG_HUMAN_SPEED * (1 + variation));
+                    this.runSpeed = Math.max(0.1, this.baseSpeed * HUMAN_RUN_MULTIPLIER);
+                } else {
+                    const variation = (Math.random() - 0.5) * 2 * ZOMBIE_SPEED_VARIATION;
+                    this.baseSpeed = Math.max(0.1, AVG_ZOMBIE_SPEED * (1 + variation));
+                    this.runSpeed = this.baseSpeed;
+                }
+            }
+            setInitialVelocity() {
+                const angle = Math.random() * Math.PI * 2;
+                const factor = this.status === 'zombie' ? (Math.random() * 0.5 + 0.5) : 1;
+                const speed = this.baseSpeed * factor;
+                this.vx = this.status === 'infected' ? 0 : Math.cos(angle) * speed;
+                this.vy = this.status === 'infected' ? 0 : Math.sin(angle) * speed;
+            }
+            draw() {
+                ctx.fillStyle = this.status === 'healthy' ? 'blue' :
+                                this.status === 'infected' ? 'grey' : 'red';
+                ctx.fillRect(this.x - ENTITY_SIZE/2, this.y - ENTITY_SIZE/2, ENTITY_SIZE, ENTITY_SIZE);
+            }
+            move() {
+                if (this.status === 'infected') return;
+                const halfWall = WALL_THICKNESS / 2;
+                const minX = halfWall + ENTITY_SIZE/2;
+                const maxX = canvas.width - halfWall - ENTITY_SIZE/2;
+                const minY = halfWall + ENTITY_SIZE/2;
+                const maxY = canvas.height - halfWall - ENTITY_SIZE/2;
+                let nx = this.x + this.vx;
+                let ny = this.y + this.vy;
+                if (nx < minX || nx > maxX) { this.vx *= -1; nx = Math.max(minX, Math.min(nx, maxX)); }
+                if (ny < minY || ny > maxY) { this.vy *= -1; ny = Math.max(minY, Math.min(ny, maxY)); }
+                this.x = nx; this.y = ny;
+            }
+            fleeFromThreat(threat) {
+                let dx = this.x - threat.x;
+                let dy = this.y - threat.y;
+                let dist = Math.hypot(dx, dy) || 1;
+                let vx = dx / dist;
+                let vy = dy / dist;
+                const halfWall = WALL_THICKNESS / 2;
+                const minX = halfWall + ENTITY_SIZE/2;
+                const maxX = canvas.width - halfWall - ENTITY_SIZE/2;
+                const minY = halfWall + ENTITY_SIZE/2;
+                const maxY = canvas.height - halfWall - ENTITY_SIZE/2;
+                let awx = 0, awy = 0;
+                if (this.x - minX < WALL_PROXIMITY) awx = 1;
+                else if (maxX - this.x < WALL_PROXIMITY) awx = -1;
+                if (this.y - minY < WALL_PROXIMITY) awy = 1;
+                else if (maxY - this.y < WALL_PROXIMITY) awy = -1;
+                if (awx || awy) {
+                    const wlen = Math.hypot(awx, awy) || 1;
+                    awx /= wlen; awy /= wlen;
+                    vx += awx * WALL_ESCAPE_WEIGHT;
+                    vy += awy * WALL_ESCAPE_WEIGHT;
+                    const vlen = Math.hypot(vx, vy) || 1;
+                    vx /= vlen; vy /= vlen;
+                }
+                this.vx = vx * this.runSpeed;
+                this.vy = vy * this.runSpeed;
+            }
+            setDirection(tx, ty, speed, towards = true) {
+                const dx = tx - this.x;
+                const dy = ty - this.y;
+                const dist = Math.hypot(dx, dy) || 1;
+                const factor = towards ? 1 : -1;
+                this.vx = dx / dist * speed * factor;
+                this.vy = dy / dist * speed * factor;
+            }
+            infect() {
+                if (this.status === 'healthy') {
+                    this.status = 'infected';
+                    this.vx = 0; this.vy = 0;
+                    this.infectionTimestamp = Date.now();
+                    this.infectionDuration = Math.random() * (MAX_INFECTION_TIME - MIN_INFECTION_TIME) + MIN_INFECTION_TIME;
+                }
+            }
+            turnZombie() {
+                if (this.status === 'infected') {
+                    this.status = 'zombie';
+                    this.infectionTimestamp = null;
+                    this.infectionDuration = null;
+                    this.calculateSpeeds();
+                    this.setInitialVelocity();
+                    this.separationDistance = randomBetween(2, 30);
+                }
+            }
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initSimulation();
+        }
+        function distance(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+        function findNearest(entity, targets, range = Infinity) {
+            let nearest = null, minD = range;
+            for (const t of targets) {
+                if (entity === t) continue;
+                const d = distance(entity, t);
+                if (d < minD) { minD = d; nearest = t; }
+            }
+            return nearest;
+        }
+        function updateEntities() {
+            const zombies = entities.filter(e => e.status === 'zombie');
+            const healthy = entities.filter(e => e.status === 'healthy');
+            entities.forEach(e => {
+                if (e.status === 'healthy') {
+                    const threat = findNearest(e, zombies, FLEE_DISTANCE);
+                    if (threat) e.fleeFromThreat(threat);
+                    else if (Date.now() - e.lastDirectionChange > CHANGE_DIRECTION_INTERVAL || (!e.vx && !e.vy)) {
+                        const angle = Math.random() * Math.PI * 2;
+                        e.vx = Math.cos(angle) * e.baseSpeed;
+                        e.vy = Math.sin(angle) * e.baseSpeed;
+                        e.lastDirectionChange = Date.now();
+                    }
+                    e.move();
+                    zombies.forEach(z => { if (distance(e, z) < COLLISION_THRESHOLD) e.infect(); });
+                } else if (e.status === 'infected') {
+                    if (Date.now() - e.infectionTimestamp >= e.infectionDuration) e.turnZombie();
+                } else if (e.status === 'zombie') {
+                    let sepX = 0, sepY = 0, count = 0;
+                    for (const other of zombies) {
+                        if (other === e) continue;
+                        const d = distance(e, other);
+                        if (d < e.separationDistance && d > 0) {
+                            sepX += (e.x - other.x) / d;
+                            sepY += (e.y - other.y) / d;
+                            count++;
+                        }
+                    }
+                    if (count) {
+                        sepX /= count; sepY /= count;
+                        const slen = Math.hypot(sepX, sepY) || 1;
+                        sepX /= slen; sepY /= slen;
+                    }
+                    if (healthy.length) {
+                        const target = findNearest(e, healthy, ZOMBIE_SIGHT_RANGE);
+                        if (target) {
+                            let dx = target.x - e.x;
+                            let dy = target.y - e.y;
+                            let dist = Math.hypot(dx, dy) || 1;
+                            let vx = dx / dist;
+                            let vy = dy / dist;
+                            if (dist > e.separationDistance) {
+                                vx += sepX * ZOMBIE_SEPARATION_WEIGHT;
+                                vy += sepY * ZOMBIE_SEPARATION_WEIGHT;
+                            }
+                            const vlen = Math.hypot(vx, vy) || 1;
+                            vx /= vlen; vy /= vlen;
+                            e.vx = vx * e.baseSpeed;
+                            e.vy = vy * e.baseSpeed;
+                        } else if (Math.random() < 0.01 || (!e.vx && !e.vy)) {
+                            const angle = Math.random() * Math.PI * 2;
+                            e.vx = Math.cos(angle) * e.baseSpeed * 0.3;
+                            e.vy = Math.sin(angle) * e.baseSpeed * 0.3;
+                        }
+                    } else {
+                        e.vx *= 0.98; e.vy *= 0.98;
+                        if (Math.abs(e.vx) < 0.05) e.vx = 0;
+                        if (Math.abs(e.vy) < 0.05) e.vy = 0;
+                    }
+                    e.move();
+                }
+            });
+        }
+        function draw() {
+            ctx.fillStyle = '#111';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = WALL_THICKNESS;
+            ctx.strokeStyle = 'white';
+            ctx.strokeRect(0, 0, canvas.width, canvas.height);
+            entities.forEach(e => e.draw());
+        }
+        function gameLoop() {
+            updateEntities(); draw(); animationFrameId = requestAnimationFrame(gameLoop);
+        }
+        function initSimulation() {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            entities = [];
+            const halfWall = WALL_THICKNESS / 2;
+            const minX = halfWall + ENTITY_SIZE/2;
+            const maxX = canvas.width - halfWall - ENTITY_SIZE/2;
+            const minY = halfWall + ENTITY_SIZE/2;
+            const maxY = canvas.height - halfWall - ENTITY_SIZE/2;
+            for (let i = 0; i < NUM_INITIAL_HUMANS; i++) {
+                const x = Math.random() * (maxX - minX) + minX;
+                const y = Math.random() * (maxY - minY) + minY;
+                entities.push(new Entity(x, y, 'healthy'));
+            }
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+        window.addEventListener('resize', resizeCanvas);
+        canvas.addEventListener('click', e => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const halfWall = WALL_THICKNESS / 2;
+            const minX = halfWall + ENTITY_SIZE/2;
+            const maxX = canvas.width - halfWall - ENTITY_SIZE/2;
+            const minY = halfWall + ENTITY_SIZE/2;
+            const maxY = canvas.height - halfWall - ENTITY_SIZE/2;
+            if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+                entities.push(new Entity(x, y, 'zombie'));
+            }
+        });
+        resizeCanvas();
+    </script>
+</body>
+</html>
