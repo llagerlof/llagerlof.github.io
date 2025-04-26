@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Infecção Zumbi v3.3 - Fuga Realista Aprimorada</title>
+    <title>Zombie Infection Simulator v3.4</title>
     <style>
         body, html { margin: 0; padding: 0; overflow: hidden; height: 100%; background-color: #111; }
         canvas { display: block; }
@@ -15,11 +15,11 @@
         const canvas = document.getElementById('simulationCanvas');
         const ctx = canvas.getContext('2d');
 
-        // --- Configurações ---
+        // --- Settings ---
         const ENTITY_SIZE = 2;
         const WALL_THICKNESS = 40;
-        const WALL_PROXIMITY = 20;         // Distância para considerar "próximo à parede"
-        const WALL_ESCAPE_WEIGHT = 1.5;    // Peso para componente de fuga da parede
+        const WALL_PROXIMITY = 20;         // Distance to consider "near the wall"
+        const WALL_ESCAPE_WEIGHT = 1.5;    // Weight for wall escape component
         const NUM_INITIAL_HUMANS = 300;
         const AVG_HUMAN_SPEED = 0.8;
         const AVG_ZOMBIE_SPEED = 0.9;
@@ -33,13 +33,13 @@
         const MAX_INFECTION_TIME = 7000;
         const COLLISION_THRESHOLD = ENTITY_SIZE * 1.5;
 
-        // --- Peso da separação entre zumbis ---
-        const ZOMBIE_SEPARATION_WEIGHT = 1.0;   // peso da força de separação
+        // --- Zombie separation weight ---
+        const ZOMBIE_SEPARATION_WEIGHT = 1.0;   // weight of separation force
 
         let entities = [];
         let animationFrameId;
 
-        // Função utilitária para gerar número aleatório entre min e max
+        // Utility function to generate random number between min and max
         function randomBetween(min, max) {
             return Math.random() * (max - min) + min;
         }
@@ -54,7 +54,7 @@
                 this.calculateSpeeds();
                 this.setInitialVelocity();
                 if (status === 'zombie') {
-                    // atribui distância de separação randômica ao virar zumbi
+                    // assigns random separation distance when turning into a zombie
                     this.separationDistance = randomBetween(2, 30);
                 }
             }
