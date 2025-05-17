@@ -1,36 +1,259 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<title>llagerlof.github.io</title>
-		<meta name="description" content="llagerlof.github.io">
-		<meta name="author" content="Lawrence Julius Lagerlof de Oliveira">
-		<style>
-			* {
-				font-family: Courier;
-			}
-			.indent {
-				margin-left: 25px;
-			}
-		</style>
-	</head>
-	<body>
-		<h1>llagerlof.github.io</h1>
-		<p><i>Lawrence Lagerlof</i></p>
-		<p>llagerlof@gmail.com</p>
-		<p><a href="https://www.linkedin.com/in/lawrencelagerlof" target="_blank">linkedin.com/in/lawrencelagerlof</a></p>
-		<p><a href="https://github.com/llagerlof" target="_blank">github.com/llagerlof</a></p>
-		<p class="indent"><a href="https://github.com/llagerlof/game-of-life-dom" target="_blank">Conway's Game of Life</a></p>
-		<p class="indent"><a href="https://github.com/llagerlof/MoodleRest" target="_blank">MoodleRest</a></p>
-		<p class="indent"><a href="https://github.com/llagerlof/freezer" target="_blank">Freezer</a></p>
-		<p class="indent"><a href="https://github.com/llagerlof/QuickAuthPHP" target="_blank">QuickAuthPHP</a></p>
-		<p class="indent"><a href="https://github.com/llagerlof/Qlog" target="_blank">Qlog</a></p>
-		<p class="indent"><a href="https://github.com/llagerlof/MyConsolePHP" target="_blank">MyConsolePHP</a></p>
-		<p class="indent"><a href="https://github.com/llagerlof/MyLogPHP" target="_blank">MyLogPHP</a></p>
-		<p class="indent"><a href="https://github.com/llagerlof/MyCrudPHP" target="_blank">MyCrudPHP</a></p>
-		<p class="indent"><a href="https://github.com/llagerlof/MyCsvPHP" target="_blank">MyCsvPHP</a></p>
-		<p class="indent"><a href="https://github.com/llagerlof/fawk" target="_blank">fawk</a></p>
-		<p><a href="today-i-learned" target="_blank">til</p>
-		<p><a href="https://github.com/llagerlof/llagerlof.github.io" target="_blank">self</p>
-	</body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lawrence Lagerlof</title>
+  <style>
+    :root {
+      --bg-color: #f5f5f5;
+      --text-color: #333;
+      --accent-color: #2c3e50;
+      --hover-color: #3498db;
+      --section-bg: #ffffff;
+      --border-color: #e0e0e0;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-color: #1a1a1a;
+        --text-color: #e0e0e0;
+        --accent-color: #3498db;
+        --hover-color: #2ecc71;
+        --section-bg: #2c2c2c;
+        --border-color: #444;
+      }
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      padding: 2rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    header {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--accent-color);
+    }
+    h2 {
+      font-size: 1.8rem;
+      margin: 1.5rem 0 1rem;
+      color: var(--accent-color);
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 0.5rem;
+    }
+    .subtitle {
+      font-style: italic;
+      opacity: 0.8;
+      margin-bottom: 1rem;
+    }
+    .contact {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+    .section {
+      background-color: var(--section-bg);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      border: 1px solid var(--border-color);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    .card {
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      padding: 1rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .card h3 {
+      margin-bottom: 0.5rem;
+      color: var(--accent-color);
+    }
+    .card-icon {
+      margin-right: 0.5rem;
+      font-size: 1.2em;
+    }
+    .card p {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-bottom: 1rem;
+    }
+    a {
+      color: var(--accent-color);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    a:hover {
+      color: var(--hover-color);
+    }
+    .btn {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background-color: var(--accent-color);
+      color: white;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      transition: background-color 0.2s;
+    }
+    .btn:hover {
+      background-color: var(--hover-color);
+      color: white;
+    }
+    footer {
+      text-align: center;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Lawrence Lagerlof</h1>
+    <div class="subtitle">Software Developer</div>
+    <div class="contact">
+      <a href="https://github.com/llagerlof" target="_blank">GitHub</a>
+      llagerlof@gmail.com
+      <a href="https://www.linkedin.com/in/lawrencelagerlof" target="_blank">LinkedIn</a>
+  
+    </div>
+  </header>
+
+  <section class="section">
+    <h2>Games</h2>
+    <div class="grid">
+      <div class="card">
+        <h3><span class="card-icon">🧬</span>Conway's Game of Life</h3>
+        <p>Explore cellular automaton and see patterns evolve over generations.</p>
+        <a href="game-of-life-dom/index.html" class="btn">Play</a>
+      </div>      
+      <div class="card">
+        <h3><span class="card-icon">🧟</span>Zombie Infection Simulator</h3>
+        <p>Watch how a zombie outbreak spreads through a population in this interactive simulation.</p>
+        <a href="games/simzombie/index.html" class="btn">Play</a>
+      </div>
+      <div class="card">
+        <h3><span class="card-icon">💣</span>Minesweeper</h3>
+        <p>Classic minesweeper game - can you clear the board without hitting a mine?</p>
+        <a href="games/minesweeper/index.html" class="btn">Play</a>
+      </div>
+      <div class="card">
+        <h3><span class="card-icon">💎</span>Match 3</h3>
+        <p>Match colored pieces in rows of three or more to score points.</p>
+        <a href="games/match3/index.html" class="btn">Play</a>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Shell Tools</h2>
+    <div class="grid">
+      <div class="card">
+        <h3><span class="card-icon">📂</span>Autoleap</h3>
+        <p>Jump to any previously visited directory with <code>cd part_of_path</code>, from anywhere.</p>
+        <a href="https://github.com/llagerlof/autoleap" target="_blank" class="btn">View on GitHub</a>
+      </div>
+      <div class="card">
+        <h3><span class="card-icon">🔍</span>Ctrlr</h3>
+        <p>Improved CTRL+r command history search with fuzzy finding and clipboard support.</p>
+        <a href="https://github.com/llagerlof/ctrlr" target="_blank" class="btn">View on GitHub</a>
+      </div>
+      <div class="card">
+        <h3><span class="card-icon">🧭</span>Navigator</h3>
+        <p>Fast and easy directory navigation with fuzzy search and file opening capabilities.</p>
+        <a href="https://github.com/llagerlof/navigator" target="_blank" class="btn">View on GitHub</a>
+      </div>
+      <div class="card">
+        <h3><span class="card-icon">🗑️</span>Trash</h3>
+        <p>Command-line tool for safely moving files to trash instead of permanent deletion.</p>
+        <a href="https://github.com/llagerlof/trash" target="_blank" class="btn">View on GitHub</a>
+      </div>
+      <div class="card">
+        <h3><span class="card-icon">💾</span>Mariabak</h3>
+        <p>Simple MariaDB/MySQL database backup tool.</p>
+        <a href="https://github.com/llagerlof/mariabak" target="_blank" class="btn">View on GitHub</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Web Tools</h2>
+    <div class="grid">
+      <div class="card">
+        <h3><span class="card-icon">🌐</span>MoodleRest</h3>
+        <p>A Moodle REST API client library.</p>
+        <a href="https://github.com/llagerlof/MoodleRest" target="_blank" class="btn">View on GitHub</a>
+      </div>
+      <div class="card">
+        <h3><span class="card-icon">🔄</span>Fresh Chrome Extension</h3>
+        <p>Browser extension to automatically refresh tabs at customizable intervals.</p>
+        <a href="https://github.com/llagerlof/fresh-chrome-extension" target="_blank" class="btn">View on GitHub</a>
+      </div>
+      <div class="card">
+        <h3><span class="card-icon">❄️</span>Freezer</h3>
+        <p>PHP API to store and retrieve data.</p>
+        <a href="https://github.com/llagerlof/freezer" target="_blank" class="btn">View on GitHub</a>
+      </div>
+    </div>
+  </section>
+  
+  <section class="section">
+    <h2>PHP Libraries</h2>
+    <div class="grid">
+      <div class="card">
+        <h3><span class="card-icon">📊</span>Qlog</h3>
+        <p>Logging utility for PHP applications.</p>
+        <a href="https://github.com/llagerlof/Qlog" target="_blank" class="btn">View on GitHub</a>
+      </div>
+      <div class="card">
+        <h3><span class="card-icon">📝</span>MyLogPHP</h3>
+        <p>Logging library for PHP applications.</p>
+        <a href="https://github.com/llagerlof/MyLogPHP" target="_blank" class="btn">View on GitHub</a>
+      </div>
+      <div class="card">
+        <h3><span class="card-icon">🔐</span>QuickAuthPHP</h3>
+        <p>Simple PHP authentication library.</p>
+        <a href="https://github.com/llagerlof/QuickAuthPHP" target="_blank" class="btn">View on GitHub</a>
+      </div>      
+    </div>
+  </section>
+
+  <footer>
+    <p><a href="today-i-learned" target="_blank">Today I Learned</a> | <a href="https://github.com/llagerlof/llagerlof.github.io" target="_blank">View Source</a></p>
+  </footer>
+</body>
 </html>
