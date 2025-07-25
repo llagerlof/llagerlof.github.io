@@ -12,6 +12,7 @@
       --hover-color: #3498db;
       --section-bg: #ffffff;
       --border-color: #e0e0e0;
+      --highlight-bg: #e9f5ff;
     }
     @media (prefers-color-scheme: dark) {
       :root {
@@ -21,6 +22,7 @@
         --hover-color: #2ecc71;
         --section-bg: #2c2c2c;
         --border-color: #444;
+        --highlight-bg: #233b4e;
       }
     }
     * {
@@ -122,6 +124,11 @@
       background-color: var(--hover-color);
       color: white;
     }
+    .highlight {
+      background-color: var(--highlight-bg);
+      border: 2px solid var(--accent-color);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
     footer {
       text-align: center;
       margin-top: 2rem;
@@ -151,6 +158,16 @@
   
     </div>
   </header>
+
+  <section class="section highlight">
+    <h2>Featured Project</h2>
+    <div class="card">
+      <h3><span class="card-icon">📋</span>Website Table Exporter</h3>
+      <p>Browser extension to grab HTML tables from any site. Copy or download the data as CSV, JSON or Markdown with a single click.</p>
+      <a href="https://github.com/llagerlof/websitetableexporter" target="_blank" class="btn">View on GitHub</a>
+      <a href="https://addons.mozilla.org/firefox/addon/website-table-exporter/" target="_blank" class="btn">Firefox Add-on</a>
+    </div>
+  </section>
 
   <section class="section">
     <h2>Games</h2>
@@ -224,6 +241,12 @@
   <section class="section">
     <h2>Web Tools</h2>
     <div class="grid">
+      <div class="card">
+        <h3><span class="card-icon">📋</span>Website Table Exporter</h3>
+        <p>Export HTML tables to CSV, JSON, or Markdown.</p>
+        <a href="https://github.com/llagerlof/websitetableexporter" target="_blank" class="btn">View on GitHub</a>
+        <a href="https://addons.mozilla.org/firefox/addon/website-table-exporter/" target="_blank" class="btn">Firefox Add-on</a>
+      </div>
       <div class="card">
         <h3><span class="card-icon">🌐</span>MoodleRest</h3>
         <p>A Moodle REST API client library.</p>
