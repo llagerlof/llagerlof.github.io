@@ -379,7 +379,7 @@
             .settings-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .images-grid {
                 grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             }
@@ -428,7 +428,7 @@
                     <div class="section-title">Your Images</div>
                     <div class="image-count-badge" id="imageCount">0 images</div>
                 </div>
-                
+
                 <div class="reorder-hint hidden" id="reorderHint">
                     📱 Tap an image to select it, then tap another to swap positions
                 </div>
@@ -539,7 +539,7 @@
 
         function renderImages() {
             imagesGrid.innerHTML = '';
-            
+
             if (images.length === 0) {
                 imagesGrid.innerHTML = `
                     <div class="empty-state">
@@ -578,7 +578,7 @@
             // Add event listeners after all cards are in DOM
             images.forEach((image, index) => {
                 const card = imagesGrid.children[index];
-                
+
                 // Tap to select/swap
                 card.addEventListener('click', (e) => {
                     if (e.target.closest('.control-btn')) return;
@@ -650,40 +650,62 @@
         function mergeImages() {
             if (images.length === 0) return;
 
-            const cols = parseInt(columnsInput.value);
-            const gap = parseInt(gapSizeInput.value);
+            const cols = Math.max(1, parseInt(columnsInput.value));
+            const gap = Math.max(0, parseInt(gapSizeInput.value));
             const gapColor = gapColorInput.value;
             const rows = Math.ceil(images.length / cols);
 
-            // Find max dimensions
-            let maxWidth = 0;
-            let maxHeight = 0;
-            images.forEach(img => {
-                maxWidth = Math.max(maxWidth, img.img.width);
-                maxHeight = Math.max(maxHeight, img.img.height);
+            // Determine the natural (original) width & height of each image without scaling.
+            const widthsPerColumn = new Array(cols).fill(0);
+            const heightsPerRow = new Array(rows).fill(0);
+
+            images.forEach((image, index) => {
+                const col = index % cols;
+                const row = Math.floor(index / cols);
+                const w = image.img.width;
+                const h = image.img.height;
+                if (w > widthsPerColumn[col]) widthsPerColumn[col] = w;
+                if (h > heightsPerRow[row]) heightsPerRow[row] = h;
             });
 
-            // Calculate canvas size
-            const canvasWidth = (maxWidth * cols) + (gap * (cols - 1));
-            const canvasHeight = (maxHeight * rows) + (gap * (rows - 1));
+            // Canvas size is sum of column max widths + gaps horizontally, and sum of row max heights + gaps vertically.
+            const canvasWidth = widthsPerColumn.reduce((sum, w) => sum + w, 0) + gap * (cols - 1);
+            const canvasHeight = heightsPerRow.reduce((sum, h) => sum + h, 0) + gap * (rows - 1);
 
             resultCanvas.width = canvasWidth;
             resultCanvas.height = canvasHeight;
 
             const ctx = resultCanvas.getContext('2d');
-
-            // Fill with gap color
             ctx.fillStyle = gapColor;
             ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-            // Draw images
+            // Precompute cumulative offsets for columns and rows (top-left of each cell)
+            const colOffsets = [];
+            const rowOffsets = [];
+            widthsPerColumn.forEach((w, i) => {
+                const prev = i === 0 ? 0 : colOffsets[i - 1] + widthsPerColumn[i - 1] + gap;
+                colOffsets.push(prev);
+            });
+            heightsPerRow.forEach((h, i) => {
+                const prev = i === 0 ? 0 : rowOffsets[i - 1] + heightsPerRow[i - 1] + gap;
+                rowOffsets.push(prev);
+            });
+
+            // Draw each image centered in its cell so smaller images keep aspect and generate extra spacing around them.
             images.forEach((image, index) => {
                 const col = index % cols;
                 const row = Math.floor(index / cols);
-                const x = col * (maxWidth + gap);
-                const y = row * (maxHeight + gap);
+                const cellX = colOffsets[col];
+                const cellY = rowOffsets[row];
+                const cellW = widthsPerColumn[col];
+                const cellH = heightsPerRow[row];
+                const imgW = image.img.width;
+                const imgH = image.img.height;
 
-                ctx.drawImage(image.img, x, y, maxWidth, maxHeight);
+                // Center the image inside the cell
+                const drawX = cellX + (cellW - imgW) / 2;
+                const drawY = cellY + (cellH - imgH) / 2;
+                ctx.drawImage(image.img, drawX, drawY);
             });
 
             resultSection.classList.remove('hidden');
