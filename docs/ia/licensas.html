@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comparativo de Licenças — IAs Generativas</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f4f0;
+    color: #1a1a18;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .hdr { padding-bottom: 1rem; border-bottom: 0.5px solid #d3d1c7; margin-bottom: 1.25rem; }
+  .hdr h1 { font-size: 22px; font-weight: 500; color: #1a1a18; }
+  .hdr p { font-size: 13px; color: #5f5e5a; margin-top: 5px; }
+
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1rem; }
+  .tab {
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 0.5px solid #888780;
+    background: transparent;
+    color: #5f5e5a;
+    transition: all .15s;
+  }
+  .tab:hover { background: #e8e7e2; }
+  .tab.active { background: #1a1a18; color: #ffffff; border-color: #1a1a18; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 1.25rem; }
+  .leg-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #5f5e5a; }
+  .leg-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .card {
+    background: #ffffff;
+    border: 0.5px solid #d3d1c7;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .card:hover { border-color: #888780; }
+  .card.expanded { border-color: #444441; }
+
+  .card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .avatar {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 500;
+    flex-shrink: 0;
+  }
+  .card-title { flex: 1; min-width: 0; }
+  .card-title h3 { font-size: 14px; font-weight: 500; color: #1a1a18; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .badge {
+    display: inline-block;
+    font-size: 10px; font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-top: 3px;
+  }
+  .badge-free { background: #eaf3de; color: #3b6d11; }
+  .badge-paid { background: #eeedfe; color: #3c3489; }
+
+  .price-tag { font-size: 12px; font-weight: 500; flex-shrink: 0; }
+
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat { background: #f1efe8; border-radius: 8px; padding: 8px 10px; }
+  .stat-label { font-size: 10px; color: #5f5e5a; margin-bottom: 2px; text-transform: uppercase; letter-spacing: .04em; }
+  .stat-val { font-size: 11px; font-weight: 500; color: #1a1a18; line-height: 1.3; }
+
+  .ctx-bar { margin: 10px 0 0; height: 4px; border-radius: 2px; background: #d3d1c7; overflow: hidden; }
+  .ctx-fill { height: 100%; border-radius: 2px; }
+  .ctx-label { font-size: 10px; color: #5f5e5a; margin-top: 4px; }
+
+  .extra {
+    margin-top: 10px;
+    border-top: 0.5px solid #d3d1c7;
+    padding-top: 10px;
+    display: none;
+  }
+  .card.expanded .extra { display: block; }
+  .extra-flags { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px 0; }
+  .extra-flag { background: #f1efe8; border-radius: 6px; padding: 7px 9px; }
+  .extra-flag-label { font-size: 10px; color: #5f5e5a; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px; }
+  .extra-flag-val { font-size: 11px; font-weight: 500; color: #1a1a18; display: flex; align-items: center; gap: 4px; }
+  .pip { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .extra-obs { font-size: 12px; color: #5f5e5a; line-height: 1.6; }
+
+  .section-title { font-size: 14px; font-weight: 500; color: #5f5e5a; margin-bottom: 12px; }
+
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .bar-name { width: 150px; font-size: 12px; color: #5f5e5a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
+  .bar-track { flex: 1; height: 18px; background: #f1efe8; border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; display: flex; align-items: center; padding-left: 7px; font-size: 10px; font-weight: 500; white-space: nowrap; }
+  .bar-tokens { width: 56px; font-size: 11px; color: #5f5e5a; text-align: right; flex-shrink: 0; }
+
+  .footer { margin-top: 2rem; padding-top: 1rem; border-top: 0.5px solid #d3d1c7; font-size: 11px; color: #888780; }
+
+  @media (max-width: 600px) {
+    .grid { grid-template-columns: 1fr; }
+    .bar-name { width: 100px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="hdr">
+    <h1>Comparativo de licenças — IAs generativas</h1>
+    <p>Clique em um cartão para ver observações detalhadas. Use os filtros para comparar por tipo de plano ou empresa.</p>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" onclick="filter('all',this)">Todos</button>
+    <button class="tab" onclick="filter('free',this)">Gratuito</button>
+    <button class="tab" onclick="filter('paid',this)">Pago</button>
+    <button class="tab" onclick="filter('openai',this)">OpenAI</button>
+    <button class="tab" onclick="filter('google',this)">Google</button>
+    <button class="tab" onclick="filter('microsoft',this)">Microsoft</button>
+    <button class="tab" onclick="filter('anthropic',this)">Anthropic</button>
+    <button class="tab" onclick="filter('perplexity',this)">Perplexity</button>
+  </div>
+
+  <div class="legend">
+    <span class="leg-item"><span class="leg-dot" style="background:#639922"></span>OpenAI</span>
+    <span class="leg-item"><span class="leg-dot" style="background:#378add"></span>Google</span>
+    <span class="leg-item"><span class="leg-dot" style="background:#0f6e56"></span>Microsoft</span>
+    <span class="leg-item"><span class="leg-dot" style="background:#d85a30"></span>Anthropic</span>
+    <span class="leg-item"><span class="leg-dot" style="background:#534ab7"></span>Perplexity</span>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div id="chart-section">
+    <p class="section-title">Janela de contexto por plano (tokens)</p>
+    <div id="bars"></div>
+  </div>
+
+  <div class="footer">
+    Dados aproximados com base em documentação pública e testes de uso. Limites podem variar conforme carga dos servidores e atualizações das plataformas.
+  </div>
+
+</div>
+
+<script>
+const apps = [
+  {
+    id:'chatgpt-free', name:'ChatGPT', tier:'free', provider:'openai',
+    color:'#639922', bgColor:'#eaf3de', textColor:'#3b6d11', initials:'GP',
+    msgs:'~10 msgs / 5h', ctx:128, ctxLabel:'128k',
+    reset:'Auto-downgrade p/ modelo menor', price:'Gratuito',
+    training:'Sim', rights:'Sim',
+    obs:'Ao atingir o limite do modelo principal, o sistema muda automaticamente para um modelo menor (ex.: mini).'
+  },
+  {
+    id:'chatgpt-plus', name:'ChatGPT Plus', tier:'paid', provider:'openai',
+    color:'#639922', bgColor:'#eaf3de', textColor:'#3b6d11', initials:'GP',
+    msgs:'~150–160 msgs / 3h', ctx:128, ctxLabel:'128–200k',
+    reset:'Reset de janela a cada 3h', price:'~US$ 20/mês',
+    training:'Sim', rights:'Sim',
+    obs:'Alguns modelos experimentais podem ter cotas diferentes. O contexto varia por modelo (128k–200k).'
+  },
+  {
+    id:'gemini-free', name:'Gemini', tier:'free', provider:'google',
+    color:'#378add', bgColor:'#e6f1fb', textColor:'#0c447c', initials:'Ge',
+    msgs:'~30 comandos / dia', ctx:32, ctxLabel:'32k',
+    reset:'Reset diário ou bloqueio por carga', price:'Gratuito',
+    training:'Sim (desativar pode impedir histórico)', rights:'Sim',
+    obs:'Interface gratuita usa modelos Flash com contexto menor. Pode ocorrer bloqueio temporário por sobrecarga.'
+  },
+  {
+    id:'gemini-adv', name:'Gemini Advanced', tier:'paid', provider:'google',
+    color:'#378add', bgColor:'#e6f1fb', textColor:'#0c447c', initials:'Ge',
+    msgs:'Praticamente ilimitado', ctx:1000, ctxLabel:'1M',
+    reset:'Sem limite visível para uso normal', price:'~R$ 96,99/mês',
+    training:'Sim (desativar pode impedir histórico)', rights:'Sim',
+    obs:'Permite usar modelos de contexto longo (~1 milhão de tokens).'
+  },
+  {
+    id:'copilot-free', name:'Copilot', tier:'free', provider:'microsoft',
+    color:'#0f6e56', bgColor:'#e1f5ee', textColor:'#085041', initials:'Co',
+    msgs:'Contínuo / dinâmico', ctx:128, ctxLabel:'~128k',
+    reset:'Normalmente imediato', price:'Gratuito',
+    training:'Sim', rights:'Sim',
+    obs:'Baseado em modelos GPT operados pela Microsoft. Limites explícitos foram removidos; restrições existem apenas para geração de imagem.'
+  },
+  {
+    id:'copilot-pro', name:'Copilot Pro', tier:'paid', provider:'microsoft',
+    color:'#0f6e56', bgColor:'#e1f5ee', textColor:'#085041', initials:'Co',
+    msgs:'Uso extensivo contínuo', ctx:128, ctxLabel:'~128k',
+    reset:'Prioridade de servidor (latência menor)', price:'~R$ 109/mês',
+    training:'Sim', rights:'Sim',
+    obs:'Mesmo tamanho de contexto do plano gratuito, mas com prioridade de recursos e latência reduzida.'
+  },
+  {
+    id:'claude-free', name:'Claude', tier:'free', provider:'anthropic',
+    color:'#d85a30', bgColor:'#faece7', textColor:'#712b13', initials:'Cl',
+    msgs:'~18–35 msgs / ciclo', ctx:200, ctxLabel:'200k',
+    reset:'Reset ~4–5h', price:'Gratuito',
+    training:'Sim', rights:'Sim',
+    obs:'O limite real depende do tamanho total da conversa — conversas mais longas consomem a cota mais rapidamente.'
+  },
+  {
+    id:'claude-pro', name:'Claude Pro', tier:'paid', provider:'anthropic',
+    color:'#d85a30', bgColor:'#faece7', textColor:'#712b13', initials:'Cl',
+    msgs:'~5× o gratuito (~40–50 msgs / 5h)', ctx:200, ctxLabel:'200k',
+    reset:'Reset ~5h (limites semanais possíveis)', price:'~R$ 110/mês',
+    training:'Sim', rights:'Sim',
+    obs:'Chats longos consomem rapidamente a cota operacional. Podem ocorrer limites semanais além do ciclo de 5h.'
+  },
+  {
+    id:'perplexity-free', name:'Perplexity', tier:'free', provider:'perplexity',
+    color:'#534ab7', bgColor:'#eeedfe', textColor:'#3c3489', initials:'Px',
+    msgs:'Ilimitado (simples) / ~3–5 avançadas/dia', ctx:128, ctxLabel:'~128k',
+    reset:'Reset diário das pesquisas avançadas', price:'Gratuito',
+    training:'Sim', rights:'Sim',
+    obs:'Cada consulta usa um LLM diferente dependendo do tipo de busca. Buscas simples são quase ilimitadas.'
+  },
+  {
+    id:'perplexity-pro', name:'Perplexity Pro', tier:'paid', provider:'perplexity',
+    color:'#534ab7', bgColor:'#eeedfe', textColor:'#3c3489', initials:'Px',
+    msgs:'Até ~600 pesquisas avançadas/dia', ctx:200, ctxLabel:'128–200k',
+    reset:'Reset diário', price:'~US$ 20/mês',
+    training:'Sim', rights:'Sim (pode exigir atribuição em publicações)',
+    obs:'Permite escolher entre GPT, Claude e Gemini em muitas consultas.'
+  }
+];
+
+const maxCtx = 1000;
+let currentFilter = 'all';
+let expanded = null;
+
+function filter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderGrid();
+  renderBars();
+}
+
+function toggleCard(id) {
+  expanded = expanded === id ? null : id;
+  renderGrid();
+}
+
+function visible() {
+  return apps.filter(a => {
+    if (currentFilter === 'all') return true;
+    if (currentFilter === 'free') return a.tier === 'free';
+    if (currentFilter === 'paid') return a.tier === 'paid';
+    return a.provider === currentFilter;
+  });
+}
+
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = visible().map(a => {
+    const pct = Math.round((a.ctx / maxCtx) * 100);
+    const isExp = expanded === a.id;
+    return `<div class="card${isExp ? ' expanded' : ''}" onclick="toggleCard('${a.id}')">
+      <div class="card-head">
+        <div class="avatar" style="background:${a.bgColor};color:${a.textColor}">${a.initials}</div>
+        <div class="card-title">
+          <h3>${a.name}</h3>
+          <span class="badge badge-${a.tier}">${a.tier === 'free' ? 'Gratuito' : 'Pago'}</span>
+        </div>
+        <span class="price-tag" style="color:${a.textColor}">${a.price}</span>
+      </div>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-label">Mensagens</div>
+          <div class="stat-val">${a.msgs}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Reset</div>
+          <div class="stat-val">${a.reset}</div>
+        </div>
+      </div>
+      <div class="extra-flags">
+        <div class="extra-flag">
+          <div class="extra-flag-label">Opt-out de treinamento</div>
+          <div class="extra-flag-val"><span class="pip" style="background:#639922"></span>${a.training}</div>
+        </div>
+        <div class="extra-flag">
+          <div class="extra-flag-label">Direito de uso dos textos</div>
+          <div class="extra-flag-val"><span class="pip" style="background:#639922"></span>${a.rights}</div>
+        </div>
+      </div>
+      <div class="ctx-bar"><div class="ctx-fill" style="width:${Math.max(pct,2)}%;background:${a.color}"></div></div>
+      <div class="ctx-label">Contexto: ${a.ctxLabel} tokens</div>
+      <div class="extra"><div class="extra-obs">${a.obs}</div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderBars() {
+  const container = document.getElementById('bars');
+  container.innerHTML = visible().map(a => {
+    const pct = Math.round((a.ctx / maxCtx) * 100);
+    const minPct = Math.max(pct, 3);
+    return `<div class="bar-row">
+      <div class="bar-name">${a.name}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${minPct}%;background:${a.color};color:${a.textColor}">
+          ${pct >= 12 ? a.ctxLabel : ''}
+        </div>
+      </div>
+      <div class="bar-tokens">${pct < 12 ? a.ctxLabel : ''}</div>
+    </div>`;
+  }).join('');
+}
+
+renderGrid();
+renderBars();
+</script>
+</body>
+</html>
