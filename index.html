@@ -1,0 +1,19 @@
+---
+layout: default
+title: Início
+---
+<section class="hero">
+    <h1>Lawrence Lagerlof::blog</h1>
+    <p>Notas sobre software, engenharia e experimentos que estou construindo.</p>
+    <p class="post-summary">A coluna da direita traz um catálogo fixo dos meus projetos. Para ver a lista completa em tela cheia, acesse <a href="{{ '/projetos/' | relative_url }}">/projetos/</a>.</p>
+</section>
+
+<ul class="post-list">
+    {% for post in site.posts %}
+        <li>
+            <h2 class="post-title"><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h2>
+            <p class="post-meta">{{ post.date | date: "%d/%m/%Y" }}</p>
+            <p class="post-summary">{{ post.excerpt | strip_html | truncate: 170 }}</p>
+        </li>
+    {% endfor %}
+</ul>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="{{ page.lang | default: site.lang | default: 'pt-BR' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if page.title %}{{ page.title }} | {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
+    <meta name="description" content="{{ page.excerpt | default: site.description | strip_html | strip_newlines | truncate: 160 }}">
+    <link rel="stylesheet" href="{{ '/assets/css/blog.css' | relative_url }}">
+</head>
+<body>
+    <div class="backdrop"></div>
+    <header class="site-header">
+        <a class="site-title" href="{{ '/' | relative_url }}">{{ site.title }}</a>
+        <nav class="site-nav">
+            <a href="{{ '/' | relative_url }}">Início</a>
+            <a href="{{ '/about/' | relative_url }}">Sobre</a>
+            <a href="{{ '/projetos/' | relative_url }}">Projetos</a>
+        </nav>
+    </header>
+
+    <div class="site-shell">
+        <main class="site-main">
+            {{ content }}
+        </main>
+        {% include sidebar-projects.html %}
+    </div>
+
+    <footer class="site-footer">
+        <p>Publicado com Jekyll no GitHub Pages. <a href="{{ '/projetos/' | relative_url }}">Ver todos os projetos</a></p>
+    </footer>
+</body>
+</html>

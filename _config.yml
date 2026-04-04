@@ -1,0 +1,14 @@
+title: "Lawrence Lagerlof::blog"
+description: "Artigos, notas de desenvolvimento e experimentos."
+url: "https://llagerlof.github.io"
+baseurl: ""
+lang: "pt-BR"
+timezone: "America/Sao_Paulo"
+markdown: kramdown
+permalink: /:year/:month/:day/:title/
+
+exclude:
+    - Gemfile
+    - Gemfile.lock
+    - README.md
+    - vendor
