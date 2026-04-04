@@ -8,7 +8,8 @@
     <link rel="stylesheet" href="{{ '/assets/css/blog.css' | relative_url }}">
 </head>
 <body>
-    <div class="backdrop"></div>
+    <a class="skip-link" href="#content">Pular para o conteudo</a>
+    <div class="noise-layer" aria-hidden="true"></div>
     <header class="site-header">
         <a class="site-title" href="{{ '/' | relative_url }}">{{ site.title }}</a>
         <nav class="site-nav">
@@ -19,14 +20,14 @@
     </header>
 
     <div class="site-shell">
-        <main class="site-main">
+        <main class="site-main" id="content">
             {{ content }}
         </main>
         {% include sidebar-projects.html %}
     </div>
 
     <footer class="site-footer">
-        <p>Publicado com Jekyll no GitHub Pages. <a href="{{ '/projetos/' | relative_url }}">Ver todos os projetos</a></p>
+        <p>llagerlof@gmail.com</p>
     </footer>
 </body>
 </html>
