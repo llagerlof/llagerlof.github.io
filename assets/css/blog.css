@@ -454,6 +454,12 @@ body {
     padding: 0.8rem 1rem;
     overflow-x: auto;
     margin: 1rem 0;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.prose > pre {
+    max-width: 100%;
 }
 
 .prose pre code {
