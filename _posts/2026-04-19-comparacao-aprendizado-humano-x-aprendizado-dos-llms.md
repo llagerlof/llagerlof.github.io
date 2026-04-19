@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Comparação: Aprendizado humano X aprendizado dos LLMs"
-date: 2026-04-19 17:11:06 -0300
+date: 2026-04-19 14:39:02 -0300
 tags: [llm, memória, ia, cérebro, aprendizado]
 ---
 
