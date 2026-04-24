@@ -447,7 +447,7 @@
                     <div class="setting-item toggle-setting">
                         <label for="autoFitImages">
                             <span>Auto-fit image size</span>
-                            <input type="checkbox" id="autoFitImages">
+                            <input type="checkbox" id="autoFitImages" checked>
                         </label>
                         <div class="setting-help">Keeps each image proportion while bringing their final sizes closer together.</div>
                     </div>
@@ -722,10 +722,18 @@
             return offsets;
         }
 
+        function getRowCounts(itemCount, maxCols) {
+            const rowCount = Math.ceil(itemCount / maxCols);
+            const baseItemsPerRow = Math.floor(itemCount / rowCount);
+            const rowsWithExtraItem = itemCount % rowCount;
+
+            return Array.from({ length: rowCount }, (_, index) => (
+                baseItemsPerRow + (index < rowsWithExtraItem ? 1 : 0)
+            ));
+        }
+
         function calculateMergedLayout(imagesToMerge, cols, gap, autoFitEnabled) {
-            const rows = Math.ceil(imagesToMerge.length / cols);
-            const widthsPerColumn = new Array(cols).fill(0);
-            const heightsPerRow = new Array(rows).fill(0);
+            const rowCounts = getRowCounts(imagesToMerge.length, cols);
 
             let scaledDimensions;
 
@@ -752,26 +760,52 @@
                 }));
             }
 
-            scaledDimensions.forEach((dimension, index) => {
-                const col = index % cols;
-                const row = Math.floor(index / cols);
+            let startIndex = 0;
+            const rows = rowCounts.map((itemsInRow) => {
+                const items = scaledDimensions.slice(startIndex, startIndex + itemsInRow);
+                const rowHeight = items.reduce((maxHeight, item) => Math.max(maxHeight, item.height), 0);
+                const rowWidth = items.reduce((sum, item) => sum + item.width, 0) + gap * Math.max(0, items.length - 1);
+                const row = {
+                    startIndex,
+                    items,
+                    rowHeight,
+                    rowWidth
+                };
 
-                if (dimension.width > widthsPerColumn[col]) widthsPerColumn[col] = dimension.width;
-                if (dimension.height > heightsPerRow[row]) heightsPerRow[row] = dimension.height;
+                startIndex += itemsInRow;
+                return row;
             });
 
-            const canvasWidth = widthsPerColumn.reduce((sum, width) => sum + width, 0) + gap * Math.max(0, cols - 1);
-            const canvasHeight = heightsPerRow.reduce((sum, height) => sum + height, 0) + gap * Math.max(0, rows - 1);
+            const rowHeights = rows.map((row) => row.rowHeight);
+            const rowOffsets = buildOffsets(rowHeights, gap);
+            const canvasWidth = rows.reduce((maxWidth, row) => Math.max(maxWidth, row.rowWidth), 0);
+            const canvasHeight = rowHeights.reduce((sum, height) => sum + height, 0) + gap * Math.max(0, rows.length - 1);
+
+            const placements = scaledDimensions.map(() => null);
+
+            rows.forEach((row, rowIndex) => {
+                const rowStartX = (canvasWidth - row.rowWidth) / 2;
+                let currentX = rowStartX;
+                const rowY = rowOffsets[rowIndex];
+
+                row.items.forEach((item, itemIndex) => {
+                    const globalIndex = row.startIndex + itemIndex;
+                    placements[globalIndex] = {
+                        x: currentX,
+                        y: rowY + (row.rowHeight - item.height) / 2,
+                        width: item.width,
+                        height: item.height
+                    };
+                    currentX += item.width + gap;
+                });
+            });
 
             return {
                 rows,
                 scaledDimensions,
-                widthsPerColumn,
-                heightsPerRow,
                 canvasWidth,
                 canvasHeight,
-                colOffsets: buildOffsets(widthsPerColumn, gap),
-                rowOffsets: buildOffsets(heightsPerRow, gap)
+                placements
             };
         }
 
@@ -792,17 +826,8 @@
             ctx.fillRect(0, 0, layout.canvasWidth, layout.canvasHeight);
 
             images.forEach((image, index) => {
-                const col = index % cols;
-                const row = Math.floor(index / cols);
-                const cellX = layout.colOffsets[col];
-                const cellY = layout.rowOffsets[row];
-                const cellW = layout.widthsPerColumn[col];
-                const cellH = layout.heightsPerRow[row];
-                const drawWidth = layout.scaledDimensions[index].width;
-                const drawHeight = layout.scaledDimensions[index].height;
-                const drawX = cellX + (cellW - drawWidth) / 2;
-                const drawY = cellY + (cellH - drawHeight) / 2;
-                ctx.drawImage(image.img, drawX, drawY, drawWidth, drawHeight);
+                const placement = layout.placements[index];
+                ctx.drawImage(image.img, placement.x, placement.y, placement.width, placement.height);
             });
 
             resultSection.classList.remove('hidden');
