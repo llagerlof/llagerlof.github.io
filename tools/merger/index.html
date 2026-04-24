@@ -121,10 +121,34 @@
             gap: 8px;
         }
 
+        .setting-item.toggle-setting {
+            justify-content: space-between;
+        }
+
         .setting-item label {
             font-weight: 600;
             color: #475569;
             font-size: 0.95em;
+        }
+
+        .setting-item.toggle-setting label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .setting-item input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            accent-color: #667eea;
+            cursor: pointer;
+        }
+
+        .setting-help {
+            color: #64748b;
+            font-size: 0.85em;
+            line-height: 1.4;
         }
 
         .setting-item input[type="number"],
@@ -420,6 +444,13 @@
                         <label for="gapColor">Gap Color</label>
                         <input type="color" id="gapColor" value="#ffffff">
                     </div>
+                    <div class="setting-item toggle-setting">
+                        <label for="autoFitImages">
+                            <span>Auto-fit image size</span>
+                            <input type="checkbox" id="autoFitImages">
+                        </label>
+                        <div class="setting-help">Keeps each image proportion while bringing their final sizes closer together.</div>
+                    </div>
                 </div>
             </div>
 
@@ -484,6 +515,7 @@
         const columnsInput = document.getElementById('columns');
         const gapSizeInput = document.getElementById('gapSize');
         const gapColorInput = document.getElementById('gapColor');
+        const autoFitImagesInput = document.getElementById('autoFitImages');
 
         // Upload area click
         uploadArea.addEventListener('click', () => fileInput.click());
@@ -647,65 +679,130 @@
             resultSection.classList.add('hidden');
         }
 
+        function getAverage(values) {
+            if (values.length === 0) {
+                return 1;
+            }
+
+            return values.reduce((sum, value) => sum + value, 0) / values.length;
+        }
+
+        function getMedian(values) {
+            if (values.length === 0) {
+                return 1;
+            }
+
+            const sortedValues = [...values].sort((a, b) => a - b);
+            const middleIndex = Math.floor(sortedValues.length / 2);
+
+            if (sortedValues.length % 2 === 0) {
+                return (sortedValues[middleIndex - 1] + sortedValues[middleIndex]) / 2;
+            }
+
+            return sortedValues[middleIndex];
+        }
+
+        function getNormalizedTargetArea(areas) {
+            const medianArea = Math.max(1, getMedian(areas));
+            const lowerBound = medianArea * 0.65;
+            const upperBound = medianArea * 1.6;
+            const clampedAreas = areas.map((area) => Math.max(lowerBound, Math.min(upperBound, area)));
+
+            return Math.max(1, getAverage(clampedAreas));
+        }
+
+        function buildOffsets(sizes, gap) {
+            const offsets = [];
+
+            sizes.forEach((size, index) => {
+                const previousOffset = index === 0 ? 0 : offsets[index - 1] + sizes[index - 1] + gap;
+                offsets.push(previousOffset);
+            });
+
+            return offsets;
+        }
+
+        function calculateMergedLayout(imagesToMerge, cols, gap, autoFitEnabled) {
+            const rows = Math.ceil(imagesToMerge.length / cols);
+            const widthsPerColumn = new Array(cols).fill(0);
+            const heightsPerRow = new Array(rows).fill(0);
+
+            let scaledDimensions;
+
+            if (autoFitEnabled) {
+                const areas = imagesToMerge.map((image) => image.img.width * image.img.height);
+                const targetArea = getNormalizedTargetArea(areas);
+                const minScale = 0.12;
+                const maxScale = 1.9;
+
+                scaledDimensions = imagesToMerge.map((image) => {
+                    const currentArea = Math.max(1, image.img.width * image.img.height);
+                    const targetScale = Math.sqrt(targetArea / currentArea);
+                    const scale = Math.max(minScale, Math.min(maxScale, targetScale));
+
+                    return {
+                        width: Math.max(1, Math.round(image.img.width * scale)),
+                        height: Math.max(1, Math.round(image.img.height * scale))
+                    };
+                });
+            } else {
+                scaledDimensions = imagesToMerge.map((image) => ({
+                    width: image.img.width,
+                    height: image.img.height
+                }));
+            }
+
+            scaledDimensions.forEach((dimension, index) => {
+                const col = index % cols;
+                const row = Math.floor(index / cols);
+
+                if (dimension.width > widthsPerColumn[col]) widthsPerColumn[col] = dimension.width;
+                if (dimension.height > heightsPerRow[row]) heightsPerRow[row] = dimension.height;
+            });
+
+            const canvasWidth = widthsPerColumn.reduce((sum, width) => sum + width, 0) + gap * Math.max(0, cols - 1);
+            const canvasHeight = heightsPerRow.reduce((sum, height) => sum + height, 0) + gap * Math.max(0, rows - 1);
+
+            return {
+                rows,
+                scaledDimensions,
+                widthsPerColumn,
+                heightsPerRow,
+                canvasWidth,
+                canvasHeight,
+                colOffsets: buildOffsets(widthsPerColumn, gap),
+                rowOffsets: buildOffsets(heightsPerRow, gap)
+            };
+        }
+
         function mergeImages() {
             if (images.length === 0) return;
 
             const cols = Math.max(1, parseInt(columnsInput.value));
             const gap = Math.max(0, parseInt(gapSizeInput.value));
             const gapColor = gapColorInput.value;
-            const rows = Math.ceil(images.length / cols);
+            const autoFitEnabled = autoFitImagesInput.checked;
+            const layout = calculateMergedLayout(images, cols, gap, autoFitEnabled);
 
-            // Determine the natural (original) width & height of each image without scaling.
-            const widthsPerColumn = new Array(cols).fill(0);
-            const heightsPerRow = new Array(rows).fill(0);
-
-            images.forEach((image, index) => {
-                const col = index % cols;
-                const row = Math.floor(index / cols);
-                const w = image.img.width;
-                const h = image.img.height;
-                if (w > widthsPerColumn[col]) widthsPerColumn[col] = w;
-                if (h > heightsPerRow[row]) heightsPerRow[row] = h;
-            });
-
-            // Canvas size is sum of column max widths + gaps horizontally, and sum of row max heights + gaps vertically.
-            const canvasWidth = widthsPerColumn.reduce((sum, w) => sum + w, 0) + gap * (cols - 1);
-            const canvasHeight = heightsPerRow.reduce((sum, h) => sum + h, 0) + gap * (rows - 1);
-
-            resultCanvas.width = canvasWidth;
-            resultCanvas.height = canvasHeight;
+            resultCanvas.width = layout.canvasWidth;
+            resultCanvas.height = layout.canvasHeight;
 
             const ctx = resultCanvas.getContext('2d');
             ctx.fillStyle = gapColor;
-            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+            ctx.fillRect(0, 0, layout.canvasWidth, layout.canvasHeight);
 
-            // Precompute cumulative offsets for columns and rows (top-left of each cell)
-            const colOffsets = [];
-            const rowOffsets = [];
-            widthsPerColumn.forEach((w, i) => {
-                const prev = i === 0 ? 0 : colOffsets[i - 1] + widthsPerColumn[i - 1] + gap;
-                colOffsets.push(prev);
-            });
-            heightsPerRow.forEach((h, i) => {
-                const prev = i === 0 ? 0 : rowOffsets[i - 1] + heightsPerRow[i - 1] + gap;
-                rowOffsets.push(prev);
-            });
-
-            // Draw each image centered in its cell so smaller images keep aspect and generate extra spacing around them.
             images.forEach((image, index) => {
                 const col = index % cols;
                 const row = Math.floor(index / cols);
-                const cellX = colOffsets[col];
-                const cellY = rowOffsets[row];
-                const cellW = widthsPerColumn[col];
-                const cellH = heightsPerRow[row];
-                const imgW = image.img.width;
-                const imgH = image.img.height;
-
-                // Center the image inside the cell
-                const drawX = cellX + (cellW - imgW) / 2;
-                const drawY = cellY + (cellH - imgH) / 2;
-                ctx.drawImage(image.img, drawX, drawY);
+                const cellX = layout.colOffsets[col];
+                const cellY = layout.rowOffsets[row];
+                const cellW = layout.widthsPerColumn[col];
+                const cellH = layout.heightsPerRow[row];
+                const drawWidth = layout.scaledDimensions[index].width;
+                const drawHeight = layout.scaledDimensions[index].height;
+                const drawX = cellX + (cellW - drawWidth) / 2;
+                const drawY = cellY + (cellH - drawHeight) / 2;
+                ctx.drawImage(image.img, drawX, drawY, drawWidth, drawHeight);
             });
 
             resultSection.classList.remove('hidden');
