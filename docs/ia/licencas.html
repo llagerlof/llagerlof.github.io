@@ -24,7 +24,30 @@
   .hdr h1 { font-size: 22px; font-weight: 500; color: #1a1a18; }
   .hdr p { font-size: 13px; color: #5f5e5a; margin-top: 5px; }
 
-  .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1rem; }
+  .filter-groups {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 1rem;
+  }
+
+  .filter-group {
+    background: #ebe8de;
+    border: 0.5px solid #d3d1c7;
+    border-radius: 12px;
+    padding: 0.75rem;
+  }
+
+  .filter-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #5f5e5a;
+    margin-bottom: 8px;
+  }
+
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
   .tab {
     padding: 5px 14px;
     border-radius: 20px;
@@ -55,11 +78,9 @@
     border: 0.5px solid #d3d1c7;
     border-radius: 12px;
     padding: 1rem 1.25rem;
-    cursor: pointer;
     transition: border-color .15s, box-shadow .15s;
   }
   .card:hover { border-color: #888780; }
-  .card.expanded { border-color: #444441; }
 
   .card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
   .avatar {
@@ -98,9 +119,7 @@
     margin-top: 10px;
     border-top: 0.5px solid #d3d1c7;
     padding-top: 10px;
-    display: none;
   }
-  .card.expanded .extra { display: block; }
   .extra-flags { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px 0; }
   .extra-flag { background: #f1efe8; border-radius: 6px; padding: 7px 9px; }
   .extra-flag-label { font-size: 10px; color: #5f5e5a; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px; }
@@ -119,6 +138,7 @@
   .footer { margin-top: 2rem; padding-top: 1rem; border-top: 0.5px solid #d3d1c7; font-size: 11px; color: #888780; }
 
   @media (max-width: 600px) {
+    .filter-groups { grid-template-columns: 1fr; }
     .grid { grid-template-columns: 1fr; }
     .bar-name { width: 100px; }
   }
@@ -128,27 +148,39 @@
 <div class="container">
 
   <div class="hdr">
-    <h1>Comparativo de licenças — IAs generativas</h1>
-    <p>Clique em um cartão para ver observações detalhadas. Use os filtros para comparar por tipo de plano ou empresa.</p>
+    <h1>Comparativo de licenças das IAs generativas (maio/2026)</h1>
+    <p>Use os filtros para comparar por tipo de plano ou empresa. As observações detalhadas aparecem em todos os cartões.</p>
   </div>
 
-  <div class="tabs" id="tabs">
-    <button class="tab active" onclick="filter('all',this)">Todos</button>
-    <button class="tab" onclick="filter('free',this)">Gratuito</button>
-    <button class="tab" onclick="filter('paid',this)">Pago</button>
-    <button class="tab" onclick="filter('openai',this)">OpenAI</button>
-    <button class="tab" onclick="filter('google',this)">Google</button>
-    <button class="tab" onclick="filter('microsoft',this)">Microsoft</button>
-    <button class="tab" onclick="filter('anthropic',this)">Anthropic</button>
-    <button class="tab" onclick="filter('perplexity',this)">Perplexity</button>
+  <div class="filter-groups">
+    <div class="filter-group">
+      <div class="filter-label">Plano</div>
+      <div class="tabs" id="tier-tabs">
+        <button class="tab active" onclick="setTierFilter('all',this)">Todos</button>
+        <button class="tab" onclick="setTierFilter('free',this)">Gratuito</button>
+        <button class="tab" onclick="setTierFilter('paid',this)">Pago</button>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-label">Aplicacao</div>
+      <div class="tabs" id="provider-tabs">
+        <button class="tab active" onclick="setProviderFilter('all',this)">Todos</button>
+        <button class="tab" onclick="setProviderFilter('openai',this)">ChatGPT</button>
+        <button class="tab" onclick="setProviderFilter('google',this)">Gemini</button>
+        <button class="tab" onclick="setProviderFilter('microsoft',this)">Copilot</button>
+        <button class="tab" onclick="setProviderFilter('anthropic',this)">Claude</button>
+        <button class="tab" onclick="setProviderFilter('perplexity',this)">Perplexity</button>
+      </div>
+    </div>
   </div>
 
   <div class="legend">
-    <span class="leg-item"><span class="leg-dot" style="background:#639922"></span>OpenAI</span>
-    <span class="leg-item"><span class="leg-dot" style="background:#378add"></span>Google</span>
-    <span class="leg-item"><span class="leg-dot" style="background:#0f6e56"></span>Microsoft</span>
-    <span class="leg-item"><span class="leg-dot" style="background:#d85a30"></span>Anthropic</span>
-    <span class="leg-item"><span class="leg-dot" style="background:#534ab7"></span>Perplexity</span>
+    <span class="leg-item"><span class="leg-dot" style="background:#639922"></span>ChatGPT (OpenAI)</span>
+    <span class="leg-item"><span class="leg-dot" style="background:#378add"></span>Gemini (Google)</span>
+    <span class="leg-item"><span class="leg-dot" style="background:#0f6e56"></span>Copilot (Microsoft)</span>
+    <span class="leg-item"><span class="leg-dot" style="background:#d85a30"></span>Claude (Anthropic)</span>
+    <span class="leg-item"><span class="leg-dot" style="background:#534ab7"></span>Perplexity (Perplexity)</span>
   </div>
 
   <div class="grid" id="grid"></div>
@@ -170,7 +202,7 @@ const apps = [
     id:'chatgpt-free', name:'ChatGPT', tier:'free', provider:'openai',
     color:'#639922', bgColor:'#eaf3de', textColor:'#3b6d11', initials:'GP',
     model:'GPT-5.5',
-    msgs:'~10 mensagens a cada 5h no modelo principal', ctx:16000, ctxLabel:'16.000',
+    msgs:'~10 mensagens a cada 5h no modelo principal', ctx:256000, ctxLabel:'256.000',
     reset:'Apos o limite ocorre downgrade automatico para modelo menor', price:'—',
     training:'Sim', rights:'Sim (mas precisa indicar que o texto foi gerado por IA)',
     obs:'Ao atingir o limite do modelo principal, o sistema muda automaticamente para um modelo menor (ex.: mini).'
@@ -259,33 +291,35 @@ const apps = [
 ];
 
 const maxCtx = Math.max(...apps.filter(app => typeof app.ctx === 'number').map(app => app.ctx));
-let currentFilter = 'all';
-let expanded = null;
+let currentTier = 'all';
+let currentProvider = 'all';
 
 function getContextWidth(ctx) {
   if (typeof ctx !== 'number' || ctx <= 0) return 0;
   return Math.round((ctx / maxCtx) * 100);
 }
 
-function filter(f, btn) {
-  currentFilter = f;
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+function setTierFilter(filter, btn) {
+  currentTier = filter;
+  document.querySelectorAll('#tier-tabs .tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
   renderGrid();
   renderBars();
 }
 
-function toggleCard(id) {
-  expanded = expanded === id ? null : id;
+function setProviderFilter(filter, btn) {
+  currentProvider = filter;
+  document.querySelectorAll('#provider-tabs .tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
   renderGrid();
+  renderBars();
 }
 
 function visible() {
   return apps.filter(a => {
-    if (currentFilter === 'all') return true;
-    if (currentFilter === 'free') return a.tier === 'free';
-    if (currentFilter === 'paid') return a.tier === 'paid';
-    return a.provider === currentFilter;
+    const tierMatches = currentTier === 'all' || a.tier === currentTier;
+    const providerMatches = currentProvider === 'all' || a.provider === currentProvider;
+    return tierMatches && providerMatches;
   });
 }
 
@@ -293,8 +327,7 @@ function renderGrid() {
   const grid = document.getElementById('grid');
   grid.innerHTML = visible().map(a => {
     const pct = getContextWidth(a.ctx);
-    const isExp = expanded === a.id;
-    return `<div class="card${isExp ? ' expanded' : ''}" onclick="toggleCard('${a.id}')">
+    return `<div class="card">
       <div class="card-head">
         <div class="avatar" style="background:${a.bgColor};color:${a.textColor}">${a.initials}</div>
         <div class="card-title">
