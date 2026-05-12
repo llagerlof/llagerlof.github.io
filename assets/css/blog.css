@@ -124,6 +124,7 @@ body {
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 0;
+    min-width: 0;
     padding: clamp(1rem, 3vw, 1.7rem);
     box-shadow: var(--shadow-soft);
     animation: enter-up 0.45s ease;
@@ -346,6 +347,7 @@ body {
     border: 1px solid var(--line);
     border-radius: 0;
     background: var(--surface);
+    min-width: 0;
     padding: clamp(1rem, 3vw, 1.35rem);
 }
 
@@ -361,7 +363,9 @@ body {
 }
 
 .prose > * {
+    width: 100%;
     max-width: 72ch;
+    min-width: 0;
 }
 
 .prose h2,
@@ -451,12 +455,15 @@ body {
     background: #fcfcfc;
     border: 1px dashed #0b5d74;
     border-radius: 0;
+    max-width: 100%;
     padding: 0.8rem 1rem;
     overflow-x: auto;
     margin: 1rem 0;
 }
 
 .prose pre code {
+    display: block;
+    min-width: max-content;
     background: none;
     border: none;
     padding: 0;
