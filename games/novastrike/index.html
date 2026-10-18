@@ -1,153 +1,70 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NOVA STRIKE | Lawrence Lagerlof</title>
-  <style>
-    :root {
-      --bg-color: #0a0e1a;
-      --panel-color: #121a2b;
-      --panel-alt: #19253d;
-      --text-color: #e6eefb;
-      --muted-color: #9cb3d1;
-      --accent-color: #5ee7ff;
-      --accent-2: #ffce5c;
-      --border-color: rgba(255,255,255,0.08);
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      background:
-        radial-gradient(circle at top, rgba(94,231,255,0.1), transparent 28%),
-        linear-gradient(180deg, #050914 0%, #0a0e1a 100%);
-      color: var(--text-color);
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      padding: 2rem;
-    }
-    .panel {
-      width: min(900px, 100%);
-      background: rgba(18,26,43,0.95);
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
-      overflow: hidden;
-    }
-    .hero {
-      padding: 3rem 2rem 1.5rem;
-      background: linear-gradient(135deg, rgba(94,231,255,0.08), rgba(255,206,92,0.05));
-      border-bottom: 1px solid var(--border-color);
-    }
-    h1 {
-      margin: 0 0 0.5rem;
-      font-size: clamp(2.2rem, 4vw, 4rem);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-    .tag {
-      color: var(--accent-color);
-      font-size: 0.8rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      margin-bottom: 1rem;
-      display: block;
-    }
-    .summary {
-      max-width: 60ch;
-      margin: 0;
-      color: var(--muted-color);
-      line-height: 1.6;
-      font-size: 1.05rem;
-    }
-    .content {
-      padding: 2rem;
-    }
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-    .btn {
-      display: inline-block;
-      background: linear-gradient(180deg, var(--accent-color), #39aedd);
-      color: #07131d;
-      text-decoration: none;
-      font-weight: 700;
-      padding: 0.9rem 1.4rem;
-      border-radius: 999px;
-      box-shadow: 0 10px 30px rgba(94,231,255,0.2);
-    }
-    .btn.secondary {
-      background: transparent;
-      color: var(--text-color);
-      border: 1px solid var(--border-color);
-      box-shadow: none;
-    }
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1rem;
-    }
-    .info {
-      background: var(--panel-alt);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 1rem 1.1rem;
-    }
-    .label {
-      display: block;
-      color: var(--accent-2);
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      font-size: 0.72rem;
-      margin-bottom: 0.5rem;
-    }
-    .info p {
-      margin: 0;
-      color: var(--text-color);
-      line-height: 1.5;
-    }
-    a {
-      color: var(--accent-color);
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Nova Strike</title>
+<link rel="icon" href="data:,">
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #05060d;
+    overflow: hidden;
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #wrap {
+    position: relative;
+    line-height: 0;
+    box-shadow: 0 0 60px rgba(44, 232, 245, 0.08), 0 0 0 1px #1a1c2c;
+  }
+  #game {
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    touch-action: none;
+    cursor: none;
+  }
+  #fileWarning {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: #05060d;
+    color: #c7dcd0;
+    font: 15px/1.5 monospace;
+    text-align: center;
+  }
+  #fileWarning[hidden] { display: none; }
+  #fileWarning pre { background: #1a1c2c; color: #fee761; padding: 8px 14px; }
+  /* subtle CRT scanlines */
+  #wrap::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,0) 2px, rgba(0,0,0,0.13) 3px);
+    mix-blend-mode: multiply;
+  }
+</style>
 </head>
 <body>
-  <main class="panel">
-    <section class="hero">
-      <span class="tag">Arcade game</span>
-      <h1>NOVA STRIKE</h1>
-      <p class="summary">
-        A vertical pixel-art shoot 'em up with endless stage progression, boss fights, power-ups,
-        generated retro visuals, and chiptune audio built entirely in the browser.
-      </p>
-    </section>
-
-    <section class="content">
-      <div class="actions">
-        <a class="btn" href="https://github.com/llagerlof/novastrike" target="_blank" rel="noreferrer">Open project</a>
-        <a class="btn secondary" href="/projetos/" rel="noopener">Back to projects</a>
-      </div>
-
-      <div class="info-grid">
-        <article class="info">
-          <span class="label">Controls</span>
-          <p>Move with arrow keys or WASD, fire with Z/Space, and bomb with X. Touch controls are also supported.</p>
-        </article>
-        <article class="info">
-          <span class="label">Run locally</span>
-          <p>Serve the game folder over HTTP and open it in a browser, because ES modules do not work from <code>file://</code>.</p>
-        </article>
-        <article class="info">
-          <span class="label">Project</span>
-          <p>Created in plain JavaScript with canvas rendering and WebAudio, no dependencies or build step.</p>
-        </article>
-      </div>
-    </section>
-  </main>
+<div id="wrap"><canvas id="game"></canvas></div>
+<div id="fileWarning" hidden>
+  <p><b>NOVA STRIKE</b> is built from ES modules, and browsers block those on <code>file://</code> pages.</p>
+  <p>Serve the folder instead, then open <code>http://localhost:8000</code>:</p>
+  <pre>python3 -m http.server</pre>
+</div>
+<script>
+  if (location.protocol === 'file:') document.getElementById('fileWarning').hidden = false;
+</script>
+<script type="module" src="src/main.js"></script>
 </body>
 </html>
